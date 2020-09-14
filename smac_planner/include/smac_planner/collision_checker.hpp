@@ -46,20 +46,28 @@ public:
     costmap_->mapToWorld(static_cast<double>(x), static_cast<double>(y), wx, wy);
 
     if (!footprint_is_radius_) {
+      // if footprint, then we check for the footprint's points
       footprint_cost_ = footprintCostAtPose(
         wx, wy, static_cast<double>(theta), footprint_);
+
+      if (footprint_cost_ == UNKNOWN && traverse_unknown) {
+        return false;
+      }
+
+      // if occupied or unknown and not to traverse unknown space
+      return footprint_cost_ >= OCCUPIED;
     } else {
       // if radius, then we can check the center of the cost assuming inflation is used
-      footprint_cost_ = static_cast<double>(
-        costmap_->getCost(static_cast<unsigned int>(x), static_cast<unsigned int>(y)));
-    }
+      footprint_cost_ = costmap_->getCost(
+        static_cast<unsigned int>(x), static_cast<unsigned int>(y));
 
-    if (footprint_cost_ == UNKNOWN && traverse_unknown) {
-      return false;
-    }
+      if (footprint_cost_ == UNKNOWN && traverse_unknown) {
+        return false;
+      }
 
-    // if occupied or unknown and not to traverse unknown space
-    return footprint_cost_ >= OCCUPIED;
+      // if occupied or unknown and not to traverse unknown space
+      return footprint_cost_ >= INSCRIBED;
+    }
   }
 
   float getCost()
