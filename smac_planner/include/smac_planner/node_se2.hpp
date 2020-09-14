@@ -26,6 +26,7 @@
 #include <limits>
 
 #include "smac_planner/constants.hpp"
+#include "smac_planner/collision_checker.hpp"
 
 namespace smac_planner
 {
@@ -105,7 +106,7 @@ public:
    * @param cost_in The costmap cost at this node
    * @param index The index of this node for self-reference
    */
-  explicit NodeSE2(unsigned char & cost_in, const unsigned int index);
+  explicit NodeSE2(GridCollisionChecker * collision_checker, const unsigned int index);
 
   /**
    * @brief A destructor for smac_planner::NodeSE2
@@ -136,7 +137,7 @@ public:
    * @param cost_in The costmap cost at this node
    * @param index The index of this node for self-reference
    */
-  void reset(const unsigned char & cost, const unsigned int index);
+  void reset(GridCollisionChecker * collision_checker, const unsigned int index);
 
   /**
    * @brief Gets the accumulated cost at this node
@@ -216,6 +217,8 @@ public:
    */
   bool isNodeValid(const bool & traverse_unknown);
 
+  float getTraversalCost(const NodePtr & child);
+
   static inline unsigned int getIndex(
     const unsigned int & x, const unsigned int & y, const unsigned int & angle,
     const unsigned int & width, const unsigned int angle_quantization)
@@ -258,6 +261,7 @@ public:
   static void getNeighbors(
     NodePtr & node,
     std::function<bool(const unsigned int &, smac_planner::NodeSE2 * &)> & validity_checker,
+    const bool & traverse_unknown,
     NodeVector & neighbors);
 
   NodeSE2 * parent;
@@ -269,6 +273,7 @@ private:
   unsigned int _index;
   bool _was_visited;
   bool _is_queued;
+  GridCollisionChecker * _collision_checker;
   static MotionTable _motion_model;
 };
 

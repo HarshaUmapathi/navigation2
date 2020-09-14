@@ -123,11 +123,12 @@ template<typename CostmapT>
 double FootprintCollisionChecker<CostmapT>::footprintCostAtPose(
   double x, double y, double theta, const Footprint footprint)
 {
-  double cos_th = cos(theta);
-  double sin_th = sin(theta);
+  const double cos_th = cos(theta);
+  const double sin_th = sin(theta);
   Footprint oriented_footprint;
+  oriented_footprint.reserve(footprint.size());
+  geometry_msgs::msg::Point new_pt;
   for (unsigned int i = 0; i < footprint.size(); ++i) {
-    geometry_msgs::msg::Point new_pt;
     new_pt.x = x + (footprint[i].x * cos_th - footprint[i].y * sin_th);
     new_pt.y = y + (footprint[i].x * sin_th + footprint[i].y * cos_th);
     oriented_footprint.push_back(new_pt);
