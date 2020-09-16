@@ -265,6 +265,9 @@ planner_server:
       motion_model_for_search: "DUBIN"  # Moore, Van Neumann; Dubin, Redds-Shepp, Balkcom-Mason
       angle_quantization_bins: 72       # Number of angle bins for search, must be 1 for 2D node (no angle search)
       minimum_turning_radius: 0.20      # minimum turning radius in m of your vehicle
+      reverse_penalty: 2.0              # For SE2 node: penality to apply if motion is reversing
+      change_penalty: 1.5              # For SE2 node: penality to apply if motion is changing directions
+      non_straight_penalty: 4.1         # For SE2 node: penality to apply if motion is non-straight
 
       smoother:
         upsampling_ratio: 4

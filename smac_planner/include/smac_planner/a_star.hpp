@@ -71,7 +71,7 @@ public:
    * @brief A constructor for smac_planner::PlannerServer
    * @param neighborhood The type of neighborhood to use for search (4 or 8 connected)
    */
-  explicit AStarAlgorithm(const MotionModel & motion_model, const float & min_turning_radius);
+  explicit AStarAlgorithm(const MotionModel & motion_model, const SearchInfo & search_info);
 
   /**
    * @brief A destructor for smac_planner::AStarAlgorithm
@@ -248,7 +248,7 @@ private:
   unsigned int _x_size;
   unsigned int _y_size;
   unsigned int _dim3_size;
-  float _min_turning_radius;
+  SearchInfo _search_info;
 
   Coordinates _goal_coordinates;
   NodePtr _start;

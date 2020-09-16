@@ -43,7 +43,7 @@ SmacPlanner2D::~SmacPlanner2D()
 
 void SmacPlanner2D::configure(
   rclcpp_lifecycle::LifecycleNode::SharedPtr parent,
-  std::string name, std::shared_ptr<tf2_ros::Buffer> /*tf*/,
+  std::string name, std::shared_ptr<tf2_ros::Buffer>/*tf*/,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
 {
   _node = parent;
@@ -129,9 +129,8 @@ void SmacPlanner2D::configure(
       "Upsample ratio set to %i, only 2 and 4 are valid. Defaulting to 2.", _upsampling_ratio);
     _upsampling_ratio = 2;
   }
-  std::cout << "hi" << std::endl;
-  _a_star = std::make_unique<AStarAlgorithm<Node2D>>(motion_model, 0.0f);
-  std::cout << "hi2" << std::endl;
+
+  _a_star = std::make_unique<AStarAlgorithm<Node2D>>(motion_model, SearchInfo());
   _a_star->initialize(
     travel_cost_scale,
     allow_unknown,

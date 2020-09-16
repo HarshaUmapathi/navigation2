@@ -90,7 +90,7 @@ SmacPlanner::~SmacPlanner()
 
 void SmacPlanner::configure(
   rclcpp_lifecycle::LifecycleNode::SharedPtr parent,
-  std::string name, std::shared_ptr<tf2_ros::Buffer> /*tf*/,
+  std::string name, std::shared_ptr<tf2_ros::Buffer>/*tf*/,
   std::shared_ptr<nav2_costmap_2d::Costmap2DROS> costmap_ros)
 {
   _node = parent;
@@ -103,7 +103,7 @@ void SmacPlanner::configure(
   int max_on_approach_iterations = std::numeric_limits<int>::max();
   int angle_quantizations;
   float travel_cost_scale;
-  float minimum_turning_radius;
+  SearchInfo search_info;
   bool smooth_path;
   bool upsample_path;
   std::string motion_model_for_search;
@@ -146,7 +146,17 @@ void SmacPlanner::configure(
 
   nav2_util::declare_parameter_if_not_declared(
     _node, name + ".minimum_turning_radius", rclcpp::ParameterValue(1.0));
-  _node->get_parameter(name + ".minimum_turning_radius", minimum_turning_radius);
+  _node->get_parameter(name + ".minimum_turning_radius", search_info.minimum_turning_radius);
+
+  nav2_util::declare_parameter_if_not_declared(
+    _node, name + ".reverse_penalty", rclcpp::ParameterValue(2.0));
+  _node->get_parameter(name + ".reverse_penalty", search_info.reverse_penalty);
+  nav2_util::declare_parameter_if_not_declared(
+    _node, name + ".change_penalty", rclcpp::ParameterValue(1.3));
+  _node->get_parameter(name + ".change_penalty", search_info.change_penalty);
+  nav2_util::declare_parameter_if_not_declared(
+    _node, name + ".non_straight_penalty", rclcpp::ParameterValue(1.1));
+  _node->get_parameter(name + ".non_straight_penalty", search_info.non_straight_penalty);
 
   nav2_util::declare_parameter_if_not_declared(
     _node, name + ".motion_model_for_search", rclcpp::ParameterValue(std::string("MOORE")));
@@ -186,9 +196,11 @@ void SmacPlanner::configure(
     _upsampling_ratio = 2;
   }
 
-  float grid_coord_min_turning_rad =
-    minimum_turning_radius / (_costmap->getResolution() * _downsampling_factor);
-  _a_star = std::make_unique<AStarAlgorithm<NodeSE2>>(motion_model, grid_coord_min_turning_rad);
+  // convert to grid coordinates
+  search_info.minimum_turning_radius =
+    search_info.minimum_turning_radius / (_costmap->getResolution() * _downsampling_factor);
+
+  _a_star = std::make_unique<AStarAlgorithm<NodeSE2>>(motion_model, search_info);
   _a_star->initialize(
     travel_cost_scale,
     allow_unknown,
