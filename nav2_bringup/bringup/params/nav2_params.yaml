@@ -253,7 +253,7 @@ planner_server:
     use_sim_time: True
 
     GridBased:
-      tolerance: 0.5                    # tolerance for planning if unable to reach exact pose, in meters
+      tolerance: 0.5                    # tolerance for planning if unable to reach exact pose, in meters, for 2D node
       downsample_costmap: false         # whether or not to downsample the map to the specified resolution
       downsampling_factor: 1            # multiplier for the resolution of the costmap layer
       allow_unknown: false              # allow traveling in unknown space
