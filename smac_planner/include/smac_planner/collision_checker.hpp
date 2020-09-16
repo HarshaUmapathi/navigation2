@@ -54,12 +54,17 @@ public:
         return false;
       }
 
+      // center_cost_ = costmap_->getCost(
+      //   static_cast<unsigned int>(x), static_cast<unsigned int>(y));
+
       // if occupied or unknown and not to traverse unknown space
       return footprint_cost_ >= OCCUPIED;
     } else {
       // if radius, then we can check the center of the cost assuming inflation is used
       footprint_cost_ = costmap_->getCost(
         static_cast<unsigned int>(x), static_cast<unsigned int>(y));
+
+      // center_cost_ = footprint_cost_;
 
       if (footprint_cost_ == UNKNOWN && traverse_unknown) {
         return false;
@@ -79,6 +84,7 @@ public:
 protected:
   nav2_costmap_2d::Footprint footprint_;
   double footprint_cost_;
+  // double center_cost_;
   bool footprint_is_radius_;
 };
 

@@ -257,7 +257,7 @@ planner_server:
       downsample_costmap: false         # whether or not to downsample the map to the specified resolution
       downsampling_factor: 1            # multiplier for the resolution of the costmap layer
       allow_unknown: false              # allow traveling in unknown space
-      travel_cost_scale: 0.8   #0.7? SE2         # [0,1] metric for how much you value staying out of higher-cost spaces (higher more adverse)
+      travel_cost_scale: 0.6   #0.8? 2D         # [0,1] metric for how much you value staying out of higher-cost spaces (higher more adverse)
       max_iterations: -1                # maximum total iterations to search for before returning
       max_on_approach_iterations: 1000  # maximum number of iterations to attempt to reach goal once in tolerance, 2D only
       smooth_path: false                # Whether to smooth searched path
