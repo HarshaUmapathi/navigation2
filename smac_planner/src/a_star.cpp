@@ -32,14 +32,14 @@ namespace smac_planner
 template<typename NodeT>
 AStarAlgorithm<NodeT>::AStarAlgorithm(
   const MotionModel & motion_model,
-  const float & min_turning_radius)
+  const SearchInfo & search_info)
 : _travel_cost_scale(0.0),
   _neutral_cost(0.0),
   _traverse_unknown(true),
   _max_iterations(0),
   _x_size(0),
   _y_size(0),
-  _min_turning_radius(min_turning_radius),
+  _search_info(search_info),
   _goal_coordinates(Coordinates()),
   _start(nullptr),
   _goal(nullptr),
@@ -134,7 +134,7 @@ void AStarAlgorithm<NodeSE2>::createGraph(
   if (getSizeX() != x_size || getSizeY() != y_size) {
     _x_size = x_size;
     _y_size = y_size;
-    NodeSE2::initMotionModel(_motion_model, _x_size, _dim3_size, _min_turning_radius);
+    NodeSE2::initMotionModel(_motion_model, _x_size, _dim3_size, _search_info);
     _graph->clear();
     _graph->reserve(x_size * y_size * _dim3_size);
 
