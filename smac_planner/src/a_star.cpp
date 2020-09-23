@@ -278,22 +278,23 @@ bool AStarAlgorithm<NodeT>::createPath(
   getStart()->setAccumulatedCost(0.0);
 
   // Optimization: preallocate all variables
-  NodePtr current_node;
-  float g_cost;
+  NodePtr current_node = nullptr;
+  NodePtr neighbor = nullptr;
+  float g_cost = 0.0;
   NodeVector neighbors;
   int approach_iterations = 0;
   typename NodeVector::iterator neighbor_iterator;
 
   // Given an index, return a node ptr reference if its collision-free and valid
   const unsigned int max_index = getSizeX() * getSizeY() * getSizeDim3();
-  std::function<bool(const unsigned int &, NodeT * &)> neighbor_getter =
-    [&, this](const unsigned int & index, NodePtr & neighbor) -> bool
+  std::function<bool(const unsigned int &, NodeT * &)> neighborGetter =
+    [&, this](const unsigned int & index, NodePtr & neighbor_rtn) -> bool
     {
       if (index < 0 || index >= max_index) {
         return false;
       }
 
-      neighbor = &_graph->operator[](index);
+      neighbor_rtn = &_graph->operator[](index);
       return true;
     };
 
@@ -329,12 +330,12 @@ bool AStarAlgorithm<NodeT>::createPath(
 
     // 4) Expand neighbors of Nbest not visited
     neighbors.clear();
-    NodeT::getNeighbors(current_node, neighbor_getter, _traverse_unknown, neighbors);
+    NodeT::getNeighbors(current_node, neighborGetter, _traverse_unknown, neighbors);
 
     for (neighbor_iterator = neighbors.begin();
       neighbor_iterator != neighbors.end(); ++neighbor_iterator)
     {
-      NodePtr & neighbor = *neighbor_iterator;
+      neighbor = *neighbor_iterator;
 
       // 4.1) Compute the cost to go to this node
       g_cost = current_node->getAccumulatedCost() +
@@ -345,12 +346,9 @@ bool AStarAlgorithm<NodeT>::createPath(
         neighbor->setAccumulatedCost(g_cost);
         neighbor->parent = current_node;
 
-        // 4.3) If not in queue or visited, add it
-        // TODO(stevemacenski): should this always be true?
-        if (true /*!neighbor->wasVisited()*/) {
-          neighbor->queued();
-          addNode(g_cost + getHeuristicCost(neighbor), neighbor);
-        }
+        // 4.3) If not in queue or visited, add it, `getNeighbors()` handles
+        neighbor->queued();
+        addNode(g_cost + getHeuristicCost(neighbor), neighbor);
       }
     }
   }

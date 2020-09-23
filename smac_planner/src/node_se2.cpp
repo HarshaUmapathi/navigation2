@@ -134,7 +134,7 @@ void MotionTable::initReedsShepp(
     search_info.minimum_turning_radius);
 }
 
-MotionPoses MotionTable::getProjections(NodeSE2 * & node)
+MotionPoses MotionTable::getProjections(const NodeSE2 * node)
 {
   MotionPoses projection_list;
   for (unsigned int i = 0; i != projections.size(); i++) {
@@ -144,7 +144,7 @@ MotionPoses MotionTable::getProjections(NodeSE2 * & node)
   return projection_list;
 }
 
-MotionPose MotionTable::getProjection(NodeSE2 * & node, const unsigned int & motion_index)
+MotionPose MotionTable::getProjection(const NodeSE2 * node, const unsigned int & motion_index)
 {
   const MotionPose & motion_model = projections[motion_index];
 
@@ -194,6 +194,9 @@ void NodeSE2::reset(GridCollisionChecker * collision_checker, const unsigned int
   _was_visited = false;
   _is_queued = false;
   _collision_checker = collision_checker;
+  pose.x = 0.0f;
+  pose.y = 0.0f;
+  pose.theta = 0.0f;
 }
 
 bool NodeSE2::isNodeValid(const bool & traverse_unknown)
@@ -250,7 +253,7 @@ float NodeSE2::getHeuristicCost(
   const Coordinates & node_coords,
   const Coordinates & goal_coords)
 {
-  // Create OMPL states for checking
+  // Dubin or Reeds-Shepp shortest distances
   ompl::base::ScopedState<> from(_motion_model.state_space), to(_motion_model.state_space);
   from[0] = node_coords.x;
   from[1] = node_coords.y;
@@ -259,7 +262,9 @@ float NodeSE2::getHeuristicCost(
   to[1] = goal_coords.y;
   to[2] = goal_coords.theta * _motion_model.bin_size;
 
-  return _motion_model.state_space->distance(from(), to());
+  const float model_heuristic = _motion_model.state_space->distance(from(), to());
+  const float euclidean_heuristic = hypotf(goal_coords.x - node_coords.x, goal_coords.y - node_coords.y);
+  return std::max(euclidean_heuristic, model_heuristic);
 }
 
 void NodeSE2::initMotionModel(
@@ -286,12 +291,12 @@ void NodeSE2::initMotionModel(
 }
 
 void NodeSE2::getNeighbors(
-  NodePtr & node,
+  const NodePtr & node,
   std::function<bool(const unsigned int &, smac_planner::NodeSE2 * &)> & NeighborGetter,
   const bool & traverse_unknown,
   NodeVector & neighbors)
 {
-  unsigned int index;
+  unsigned int index = 0;
   NodePtr neighbor = nullptr;
   const MotionPoses motion_projections = _motion_model.getProjections(node);
   Coordinates initial_node_coords;
@@ -303,7 +308,7 @@ void NodeSE2::getNeighbors(
       static_cast<unsigned int>(motion_projections[i]._theta),
       _motion_model.size_x, _motion_model.num_angle_quantization);
 
-    if (NeighborGetter(index, neighbor)) {
+    if (NeighborGetter(index, neighbor) && !neighbor->wasVisited() && !neighbor->isQueued()) {
       // Cache the initial pose in case it was visited but valid
       // don't want to disrupt continuous coordinate expansion
       initial_node_coords = neighbor->pose;
@@ -312,7 +317,7 @@ void NodeSE2::getNeighbors(
           motion_projections[i]._x,
           motion_projections[i]._y,
           motion_projections[i]._theta));
-      if (neighbor->isNodeValid(traverse_unknown) && !neighbor->wasVisited()) {
+      if (neighbor->isNodeValid(traverse_unknown)) {
         neighbor->setMotionPrimitiveIndex(i);
         neighbors.push_back(neighbor);
       } else {

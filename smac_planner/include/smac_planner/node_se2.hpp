@@ -65,8 +65,8 @@ struct MotionTable
     unsigned int & angle_quantization_in,
     SearchInfo & search_info);
 
-  MotionPoses getProjections(NodeSE2 * & node);
-  MotionPose getProjection(NodeSE2 * & node, const unsigned int & motion_index);
+  MotionPoses getProjections(const NodeSE2 * node);
+  MotionPose getProjection(const NodeSE2 * node, const unsigned int & motion_index);
 
   MotionPoses projections;
   unsigned int size_x;
@@ -281,7 +281,7 @@ public:
    * @param neighbors Vector of neighbors to be filled
    */
   static void getNeighbors(
-    NodePtr & node,
+    const NodePtr & node,
     std::function<bool(const unsigned int &, smac_planner::NodeSE2 * &)> & validity_checker,
     const bool & traverse_unknown,
     NodeVector & neighbors);
