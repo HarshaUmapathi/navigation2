@@ -21,20 +21,6 @@
 
 #include "smac_planner/a_star.hpp"
 
-// TODO optimization: should we be constructing full SE2 graph at start?
-// or only construct as we get in contact to expand!
-// doesnt matter as much for 2D planner, but really will matter here
-// might speed things up a bit. Reserve graph (full, 20%, whatever) but dont fill in.
-
-// TODO store angle to avoid all the * bin size stuff
-
-// TODO precompute dubin/reeds-shepp grid & collision checking orientation grid
-
-// TODO multithread the createGraph setup, collision checker, analytic expansion
-// TODO createGraph takes up a STUPID amount of time
-
-// TODO static collision chcker
-
 namespace smac_planner
 {
 
@@ -278,7 +264,7 @@ bool AStarAlgorithm<NodeT>::createPath(
     return false;
   }
 
-  _tolerance = _neutral_cost * tolerance;
+  _tolerance = _neutral_cost * _neutral_cost * tolerance;
   _best_heuristic_node = {std::numeric_limits<float>::max(), 0};
   clearQueue();
 

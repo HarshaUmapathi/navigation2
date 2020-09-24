@@ -69,7 +69,6 @@ void MotionTable::initDubin(
   }
 
   // Search dimensions not promised to be clean multiples of quantization
-  // TODO STEVE try in exact intements (quick test showed didn't successfully plan as much, but no looping)
   increments = angle / bin_size;
 
   // find deflections
@@ -254,8 +253,6 @@ float NodeSE2::getTraversalCost(const NodePtr & child)
     // reverse direction
     travel_cost *= _motion_model.reverse_penalty;
   }
-
-  //travel_cost *= 10.0; // general travel weight  TODO
 
   return travel_cost;
 }
