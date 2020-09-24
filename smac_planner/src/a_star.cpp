@@ -28,9 +28,7 @@ template<typename NodeT>
 AStarAlgorithm<NodeT>::AStarAlgorithm(
   const MotionModel & motion_model,
   const SearchInfo & search_info)
-: _travel_cost_scale(0.0),
-  _neutral_cost(0.0),
-  _traverse_unknown(true),
+: _traverse_unknown(true),
   _max_iterations(0),
   _x_size(0),
   _y_size(0),
@@ -55,7 +53,6 @@ AStarAlgorithm<NodeT>::~AStarAlgorithm()
 
 template<typename NodeT>
 void AStarAlgorithm<NodeT>::initialize(
-  const float & travel_cost_scale,
   const bool & allow_unknown,
   int & max_iterations,
   const int & max_on_approach_iterations)
@@ -70,8 +67,6 @@ void AStarAlgorithm<NodeT>::initialize(
 
   _graph = std::make_unique<Graph>();
   _queue = std::make_unique<NodeQueue>();
-  _travel_cost_scale = travel_cost_scale;
-  _neutral_cost = 253.0 * (1.0 - _travel_cost_scale);
   _traverse_unknown = allow_unknown;
   _max_iterations = max_iterations;
   _max_on_approach_iterations = max_on_approach_iterations;
@@ -264,7 +259,7 @@ bool AStarAlgorithm<NodeT>::createPath(
     return false;
   }
 
-  _tolerance = _neutral_cost * _neutral_cost * tolerance;
+  _tolerance = tolerance;
   _best_heuristic_node = {std::numeric_limits<float>::max(), 0};
   clearQueue();
 
@@ -333,11 +328,10 @@ bool AStarAlgorithm<NodeT>::createPath(
       neighbor = *neighbor_iterator;
 
       // 4.1) Compute the cost to go to this node
-      g_cost = current_node->getAccumulatedCost() +
-        getTraversalCost(current_node, neighbor);
+      g_cost = getAccumulatedCost(current_node) + getTraversalCost(current_node, neighbor);
 
       // 4.2) If this is a lower cost than prior, we set this as the new cost and new approach
-      if (g_cost < neighbor->getAccumulatedCost()) {
+      if (g_cost < getAccumulatedCost(neighbor)) {
         neighbor->setAccumulatedCost(g_cost);
         neighbor->parent = current_node;
 
@@ -424,11 +418,13 @@ float AStarAlgorithm<NodeT>::getTraversalCost(
   NodePtr & current_node,
   NodePtr & new_node)
 {
-  const float move_cost = current_node->getTraversalCost(new_node);
+  return current_node->getTraversalCost(new_node);
+}
 
-  // rescale cost quadratically, makes search more convex
-  // Higher the scale, the less cost for lengthwise expansion
-  return /*50.0 + 0.8 * move_cost **/ move_cost;
+template<typename NodeT>
+float AStarAlgorithm<NodeT>::getAccumulatedCost(NodePtr & node)
+{
+  return node->getAccumulatedCost();
 }
 
 template<typename NodeT>
@@ -437,12 +433,7 @@ float AStarAlgorithm<NodeT>::getHeuristicCost(const NodePtr & node)
   const Coordinates node_coords =
     NodeT::getCoords(node->getIndex(), getSizeX(), getSizeDim3());
   float heuristic = NodeT::getHeuristicCost(
-    node_coords, _goal_coordinates) /* * 50.0 * 50.0*/;
-
-  // If we're far from goal, we want to ensure we can speed it along
-  // if (heuristic > getToleranceHeuristic()) {
-  //   heuristic *= _neutral_cost;
-  // }
+    node_coords, _goal_coordinates);
 
   if (heuristic < _best_heuristic_node.first) {
     _best_heuristic_node = {heuristic, node->getIndex()};

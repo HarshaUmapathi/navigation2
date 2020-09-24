@@ -73,7 +73,10 @@ bool Node2D::isNodeValid(const bool & traverse_unknown)
 float Node2D::getTraversalCost(const NodePtr & child)
 {
   // cost to travel will be the cost of the cell's code
-  return child->getCost();
+
+  // 50.0 is neutral cost for cost just to travel anywhere
+  // 0.8 is a scale factor to remap costs [0, 252] evenly from [50, 252]
+  return 50.0 + 0.8 * child->getCost();
 }
 
 float Node2D::getHeuristicCost(
@@ -82,7 +85,7 @@ float Node2D::getHeuristicCost(
 {
   return hypotf(
     goal_coordinates.x - node_coords.x,
-    goal_coordinates.y - node_coords.y);
+    goal_coordinates.y - node_coords.y) * 50.0;
 }
 
 void Node2D::initNeighborhood(

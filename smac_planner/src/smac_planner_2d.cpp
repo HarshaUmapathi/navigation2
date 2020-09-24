@@ -54,7 +54,6 @@ void SmacPlanner2D::configure(
   bool allow_unknown;
   int max_iterations;
   int max_on_approach_iterations;
-  float travel_cost_scale;
   bool smooth_path;
   bool upsample_path;
   std::string motion_model_for_search;
@@ -76,9 +75,6 @@ void SmacPlanner2D::configure(
   nav2_util::declare_parameter_if_not_declared(
     _node, name + ".max_iterations", rclcpp::ParameterValue(-1));
   _node->get_parameter(name + ".max_iterations", max_iterations);
-  nav2_util::declare_parameter_if_not_declared(
-    _node, name + ".travel_cost_scale", rclcpp::ParameterValue(0.8));
-  _node->get_parameter(name + ".travel_cost_scale", travel_cost_scale);
   nav2_util::declare_parameter_if_not_declared(
     _node, name + ".max_on_approach_iterations", rclcpp::ParameterValue(1000));
   _node->get_parameter(name + ".max_on_approach_iterations", max_on_approach_iterations);
@@ -118,11 +114,6 @@ void SmacPlanner2D::configure(
     max_iterations = std::numeric_limits<int>::max();
   }
 
-  if (travel_cost_scale > 1.0 || travel_cost_scale < 0.0) {
-    RCLCPP_FATAL(_node->get_logger(), "Travel cost scale must be between 0 and 1, exiting.");
-    exit(-1);
-  }
-
   if (_upsampling_ratio != 2 && _upsampling_ratio != 4) {
     RCLCPP_WARN(
       _node->get_logger(),
@@ -132,7 +123,6 @@ void SmacPlanner2D::configure(
 
   _a_star = std::make_unique<AStarAlgorithm<Node2D>>(motion_model, SearchInfo());
   _a_star->initialize(
-    travel_cost_scale,
     allow_unknown,
     max_iterations,
     max_on_approach_iterations);
@@ -160,9 +150,9 @@ void SmacPlanner2D::configure(
 
   RCLCPP_INFO(
     _node->get_logger(), "Configured plugin %s of type SmacPlanner2D with "
-    "travel cost %.2f, tolerance %.2f, maximum iterations %i, "
+    "tolerance %.2f, maximum iterations %i, "
     "max on approach iterations %i, and %s. Using motion model: %s.",
-    _name.c_str(), travel_cost_scale, _tolerance, max_iterations, max_on_approach_iterations,
+    _name.c_str(), _tolerance, max_iterations, max_on_approach_iterations,
     allow_unknown ? "allowing unknown traversal" : "not allowing unknown traversal",
     toString(motion_model).c_str());
 }
