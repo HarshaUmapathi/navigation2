@@ -267,7 +267,9 @@ float NodeSE2::getHeuristicCost(
   to[2] = goal_coords.theta * _motion_model.bin_size;
 
   const float model_heuristic = _motion_model.state_space->distance(from(), to());
-  const float euclidean_heuristic = hypotf(goal_coords.x - node_coords.x, goal_coords.y - node_coords.y);
+  const float euclidean_heuristic = hypotf(
+    goal_coords.x - node_coords.x,
+    goal_coords.y - node_coords.y);
   return NodeSE2::neutral_cost * std::max(euclidean_heuristic, model_heuristic);
 }
 
