@@ -25,6 +25,7 @@ namespace smac_planner
 
 // defining static member for all instance to share
 MotionTable NodeSE2::_motion_model;
+double NodeSE2::neutral_cost = sqrt(2);
 
 // Each of these tables are the projected motion models through
 // time and space applied to the search on the current node in
@@ -45,6 +46,7 @@ void MotionTable::initDubin(
   num_angle_quantization_float = static_cast<float>(num_angle_quantization);
   change_penalty = search_info.change_penalty;
   non_straight_penalty = search_info.non_straight_penalty;
+  cost_penalty = search_info.cost_penalty;
   reverse_penalty = search_info.reverse_penalty;
 
   // angle must meet 3 requirements:
@@ -103,6 +105,7 @@ void MotionTable::initReedsShepp(
   num_angle_quantization_float = static_cast<float>(num_angle_quantization);
   change_penalty = search_info.change_penalty;
   non_straight_penalty = search_info.non_straight_penalty;
+  cost_penalty = search_info.cost_penalty;
   reverse_penalty = search_info.reverse_penalty;
 
   float angle = 2.0 * asin(sqrt(2.0) / (2 * search_info.minimum_turning_radius));
@@ -184,15 +187,15 @@ NodeSE2::~NodeSE2()
   parent = nullptr;
 }
 
-void NodeSE2::reset(GridCollisionChecker * collision_checker, const unsigned int index)
+void NodeSE2::reset(GridCollisionChecker * collision_checker)
 {
   parent = nullptr;
   _cell_cost = std::numeric_limits<float>::quiet_NaN();
   _accumulated_cost = std::numeric_limits<float>::max();
-  _index = index;
   _was_visited = false;
   _is_queued = false;
   _collision_checker = collision_checker;
+  _motion_primitive_index = std::numeric_limits<unsigned int>::max();
   pose.x = 0.0f;
   pose.y = 0.0f;
   pose.theta = 0.0f;
@@ -213,30 +216,23 @@ bool NodeSE2::isNodeValid(const bool & traverse_unknown)
 
 float NodeSE2::getTraversalCost(const NodePtr & child)
 {
-  float & cost = child->getCost();
-  if (std::isnan(cost)) {
+  const float normalized_cost = child->getCost() / 252.0;
+  if (std::isnan(normalized_cost)) {
     throw std::runtime_error(
             "Node attempted to get traversal "
             "cost without a known SE2 collision cost!");
   }
 
+  // this is the first node
   if (getMotionPrimitiveIndex() == std::numeric_limits<unsigned int>::max()) {
-    // this is the first node
-    return cost;
+    return NodeSE2::neutral_cost;
   }
 
-  // TODO STEVE: if cost is zero, then no penalty applied!
-  // default travel cost should be length
-
-  // TODO STEVE: add back in cost
-  // maybe as a multiplier on the distance * penalty + cost or distance * penalty + (cost + min)
-
   float travel_cost = 0.0;
-  //float travel_cost_raw = sqrt(2) * (1.0 + (cost / 254.0));
-  float travel_cost_raw = sqrt(2) + (2.5 * (cost / 254.0));
+  float travel_cost_raw = NodeSE2::neutral_cost + _motion_model.cost_penalty * normalized_cost;
 
   if (getMotionPrimitiveIndex() == 0 || getMotionPrimitiveIndex() == 3) {
-    // straight motion
+    // straight motion, no additional costs to be applied
     travel_cost = travel_cost_raw;
   } else {
     if (getMotionPrimitiveIndex() == child->getMotionPrimitiveIndex()) {
@@ -272,7 +268,7 @@ float NodeSE2::getHeuristicCost(
 
   const float model_heuristic = _motion_model.state_space->distance(from(), to());
   const float euclidean_heuristic = hypotf(goal_coords.x - node_coords.x, goal_coords.y - node_coords.y);
-  return sqrt(2) * std::max(euclidean_heuristic, model_heuristic);
+  return NodeSE2::neutral_cost * std::max(euclidean_heuristic, model_heuristic);
 }
 
 void NodeSE2::initMotionModel(

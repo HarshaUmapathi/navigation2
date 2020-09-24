@@ -141,11 +141,14 @@ void SmacPlanner::configure(
     _node, name + ".reverse_penalty", rclcpp::ParameterValue(2.0));
   _node->get_parameter(name + ".reverse_penalty", search_info.reverse_penalty);
   nav2_util::declare_parameter_if_not_declared(
-    _node, name + ".change_penalty", rclcpp::ParameterValue(1.3));
+    _node, name + ".change_penalty", rclcpp::ParameterValue(0.5));
   _node->get_parameter(name + ".change_penalty", search_info.change_penalty);
   nav2_util::declare_parameter_if_not_declared(
     _node, name + ".non_straight_penalty", rclcpp::ParameterValue(1.1));
   _node->get_parameter(name + ".non_straight_penalty", search_info.non_straight_penalty);
+  nav2_util::declare_parameter_if_not_declared(
+    _node, name + ".cost_penalty", rclcpp::ParameterValue(1.2));
+  _node->get_parameter(name + ".cost_penalty", search_info.cost_penalty);
 
   nav2_util::declare_parameter_if_not_declared(
     _node, name + ".motion_model_for_search", rclcpp::ParameterValue(std::string("MOORE")));

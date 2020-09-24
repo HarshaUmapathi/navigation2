@@ -29,6 +29,7 @@ struct SearchInfo
   float non_straight_penalty;
   float change_penalty;
   float reverse_penalty;
+  float cost_penalty;
 };
 
 }  // namespace smac_planner

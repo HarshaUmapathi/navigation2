@@ -18,8 +18,12 @@
 #include <algorithm>
 #include <limits>
 #include <type_traits>
+#include <chrono>
+#include <omp.h>
+#include <thread>
 
 #include "smac_planner/a_star.hpp"
+using namespace std::chrono;
 
 namespace smac_planner
 {
@@ -137,17 +141,11 @@ void AStarAlgorithm<NodeSE2>::createGraph(
       }
     }
   } else {
-    for (unsigned int j = 0; j != y_size; j++) {
-      for (unsigned int i = 0; i != x_size; i++) {
-        for (unsigned int k = 0; k != _dim3_size; k++) {
-          // Optimization: operator[] is used over at() for performance (no bound checking)
-          index = NodeSE2::getIndex(i, j, k, _x_size, _dim3_size);
-          _graph->operator[](index).reset(_collision_checker.get(), index);
-        }
-      }
+    // #pragma omp parallel for schedule(static)
+    for (unsigned int i = 0; i < _graph->size(); i++) {
+      _graph->operator[](i).reset(_collision_checker.get());
     }
   }
-
 }
 
 template<typename NodeT>
@@ -259,7 +257,7 @@ bool AStarAlgorithm<NodeT>::createPath(
     return false;
   }
 
-  _tolerance = tolerance;
+  _tolerance = tolerance * NodeT::neutral_cost;
   _best_heuristic_node = {std::numeric_limits<float>::max(), 0};
   clearQueue();
 

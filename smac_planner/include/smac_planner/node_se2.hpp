@@ -75,6 +75,7 @@ struct MotionTable
   float bin_size;
   float change_penalty;
   float non_straight_penalty;
+  float cost_penalty;
   float reverse_penalty;
   ompl::base::StateSpacePtr state_space;
 };
@@ -141,7 +142,7 @@ public:
    * @param cost_in The costmap cost at this node
    * @param index The index of this node for self-reference
    */
-  void reset(GridCollisionChecker * collision_checker, const unsigned int index);
+  void reset(GridCollisionChecker * collision_checker);
 
   /**
    * @brief Gets the accumulated cost at this node
@@ -288,6 +289,7 @@ public:
 
   NodeSE2 * parent;
   Coordinates pose;
+  static double neutral_cost;
 
 private:
   float _cell_cost;
