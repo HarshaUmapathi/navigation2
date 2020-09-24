@@ -226,18 +226,27 @@ float NodeSE2::getTraversalCost(const NodePtr & child)
     return cost;
   }
 
+  // TODO STEVE: if cost is zero, then no penalty applied!
+  // default travel cost should be length
+
+  // TODO STEVE: add back in cost
+  // maybe as a multiplier on the distance * penalty + cost or distance * penalty + (cost + min)
+
   float travel_cost = 0.0;
+  //float travel_cost_raw = sqrt(2) * (1.0 + (cost / 254.0));
+  float travel_cost_raw = sqrt(2) + (2.5 * (cost / 254.0));
 
   if (getMotionPrimitiveIndex() == 0 || getMotionPrimitiveIndex() == 3) {
     // straight motion
-    travel_cost = cost;
+    travel_cost = travel_cost_raw;
   } else {
     if (getMotionPrimitiveIndex() == child->getMotionPrimitiveIndex()) {
       // Turning motion but keeps in same direction: encourages to commit to turning if starting it
-      travel_cost = cost * _motion_model.non_straight_penalty;
+      travel_cost = travel_cost_raw * _motion_model.non_straight_penalty;
     } else {
       // Turning motion and changing direction: penalizes wiggling
-      travel_cost = cost * _motion_model.non_straight_penalty * _motion_model.change_penalty;
+      travel_cost = travel_cost_raw * _motion_model.change_penalty;
+      travel_cost += travel_cost_raw * _motion_model.non_straight_penalty;
     }
   }
 
@@ -245,6 +254,8 @@ float NodeSE2::getTraversalCost(const NodePtr & child)
     // reverse direction
     travel_cost *= _motion_model.reverse_penalty;
   }
+
+  //travel_cost *= 10.0; // general travel weight  TODO
 
   return travel_cost;
 }

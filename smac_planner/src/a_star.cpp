@@ -26,6 +26,15 @@
 // doesnt matter as much for 2D planner, but really will matter here
 // might speed things up a bit. Reserve graph (full, 20%, whatever) but dont fill in.
 
+// TODO store angle to avoid all the * bin size stuff
+
+// TODO precompute dubin/reeds-shepp grid & collision checking orientation grid
+
+// TODO multithread the createGraph setup, collision checker, analytic expansion
+// TODO createGraph takes up a STUPID amount of time
+
+// TODO static collision chcker
+
 namespace smac_planner
 {
 
@@ -433,7 +442,7 @@ float AStarAlgorithm<NodeT>::getTraversalCost(
 
   // rescale cost quadratically, makes search more convex
   // Higher the scale, the less cost for lengthwise expansion
-  return _neutral_cost + _travel_cost_scale * move_cost * move_cost;
+  return /*50.0 + 0.8 * move_cost **/ move_cost;
 }
 
 template<typename NodeT>
@@ -442,12 +451,12 @@ float AStarAlgorithm<NodeT>::getHeuristicCost(const NodePtr & node)
   const Coordinates node_coords =
     NodeT::getCoords(node->getIndex(), getSizeX(), getSizeDim3());
   float heuristic = NodeT::getHeuristicCost(
-    node_coords, _goal_coordinates) * _neutral_cost;
+    node_coords, _goal_coordinates) /* * 50.0 * 50.0*/;
 
   // If we're far from goal, we want to ensure we can speed it along
-  if (heuristic > getToleranceHeuristic()) {
-    heuristic *= _neutral_cost;
-  }
+  // if (heuristic > getToleranceHeuristic()) {
+  //   heuristic *= _neutral_cost;
+  // }
 
   if (heuristic < _best_heuristic_node.first) {
     _best_heuristic_node = {heuristic, node->getIndex()};
