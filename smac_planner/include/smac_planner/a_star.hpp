@@ -179,7 +179,7 @@ private:
    * @param cost The cost to sort into the open set of the node
    * @param node Node pointer reference to add to open set
    */
-  inline void addToGraph(const unsigned int & index);
+  inline NodePtr addToGraph(const unsigned int & index);
 
   /**
    * @brief Check if this node is the goal node

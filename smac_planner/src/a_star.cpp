@@ -113,15 +113,20 @@ void AStarAlgorithm<NodeT>::setFootprint(nav2_costmap_2d::Footprint footprint, b
 }
 
 template<>
-void AStarAlgorithm<Node2D>::addToGraph(const unsigned int & index)
+typename AStarAlgorithm<Node2D>::NodePtr AStarAlgorithm<Node2D>::addToGraph(
+  const unsigned int & index)
 {
-  _graph.emplace(index, Node2D(_costmap->getCharMap()[index], index)); 
+  auto rtn = _graph.emplace(index, Node2D(_costmap->getCharMap()[index], index));
+  return &(rtn.first->second);
+
 }
 
 template<>
-void AStarAlgorithm<NodeSE2>::addToGraph(const unsigned int & index)
+typename AStarAlgorithm<NodeSE2>::NodePtr AStarAlgorithm<NodeSE2>::addToGraph(
+  const unsigned int & index)
 {
-  _graph.emplace(index, NodeSE2(index));
+  auto rtn = _graph.emplace(index, NodeSE2(index));
+  return &(rtn.first->second);
 }
 
 template<>
@@ -134,8 +139,7 @@ void AStarAlgorithm<Node2D>::setStart(
     throw std::runtime_error("Node type Node2D cannot be given non-zero starting dim 3.");
   }
   unsigned int index = Node2D::getIndex(mx, my, getSizeX());
-  addToGraph(index);
-  _start = &_graph.at(index);// TODO find vs at test speeds
+  _start = addToGraph(index);
 
 }
 
@@ -146,8 +150,7 @@ void AStarAlgorithm<NodeSE2>::setStart(
   const unsigned int & dim_3)
 {
   unsigned int index = NodeSE2::getIndex(mx, my, dim_3, getSizeX(), getSizeDim3());
-  addToGraph(index);
-  _start = &_graph.at(index); // TODO find vs at test speeds
+  _start = addToGraph(index);
   _start->setPose(
     Coordinates(
       static_cast<float>(mx),
@@ -166,8 +169,7 @@ void AStarAlgorithm<Node2D>::setGoal(
   }
 
   unsigned int index = Node2D::getIndex(mx, my, getSizeX());
-  addToGraph(index);
-  _goal = &_graph.at(index);// TODO find vs at test speeds
+  _goal = addToGraph(index);
   _goal_coordinates = Node2D::Coordinates(mx, my);
 }
 
@@ -178,17 +180,12 @@ void AStarAlgorithm<NodeSE2>::setGoal(
   const unsigned int & dim_3)
 {
   unsigned int index = NodeSE2::getIndex(mx, my, dim_3, getSizeX(), getSizeDim3());
-  addToGraph(index);
-  _goal = &_graph.at(index);// TODO find vs at test speeds
+  _goal = addToGraph(index);
   _goal_coordinates = NodeSE2::Coordinates(
     static_cast<float>(mx),
     static_cast<float>(my),
     static_cast<float>(dim_3));
-  _goal->setPose(
-    Coordinates(
-      static_cast<float>(mx),
-      static_cast<float>(my),
-      static_cast<float>(dim_3)));
+  _goal->setPose(_goal_coordinates);
 }
 
 template<typename NodeT>
@@ -251,8 +248,8 @@ bool AStarAlgorithm<NodeT>::createPath(
         return false;
       }
    
-      addToGraph(index);
-      neighbor_rtn = &_graph.at(index);// TODO find vs at test speeds
+      
+      neighbor_rtn = addToGraph(index);
       return true;
     };
 
@@ -281,7 +278,7 @@ bool AStarAlgorithm<NodeT>::createPath(
       if (approach_iterations > getOnApproachMaxIterations() ||
         iterations + 1 == getMaxIterations())
       {
-        NodePtr node = &_graph.at(_best_heuristic_node.second);// TODO find vs at test speeds
+        NodePtr node = &_graph.at(_best_heuristic_node.second);
         return backtracePath(node, path);
       }
     }
@@ -373,7 +370,7 @@ typename AStarAlgorithm<NodeT>::NodePtr AStarAlgorithm<NodeT>::getNextNode()
 {
   NodeBasic node = _queue.top().second;
   _queue.pop();
-  return &_graph.at(node.getIndex()); // TODO find vs at test speeds
+  return &_graph.at(node.getIndex());
 }
 
 template <>
@@ -381,7 +378,7 @@ typename AStarAlgorithm<NodeSE2>::NodePtr AStarAlgorithm<NodeSE2>::getNextNode()
 {
   NodeBasic node = _queue.top().second;
   _queue.pop();
-  NodePtr current_node = &_graph.at(node.getIndex()); // TODO find vs at test speeds
+  NodePtr current_node = &_graph.at(node.getIndex());
 
   if (!current_node->wasVisited()) {
     current_node->pose = node.pose;
