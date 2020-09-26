@@ -40,17 +40,14 @@ AStarAlgorithm<NodeT>::AStarAlgorithm(
   _goal_coordinates(Coordinates()),
   _start(nullptr),
   _goal(nullptr),
-  _graph(nullptr),
-  _queue(nullptr),
-  _motion_model(motion_model)
+  _motion_model(motion_model),
+  _collision_checker(nullptr)
 {
 }
 
 template<typename NodeT>
 AStarAlgorithm<NodeT>::~AStarAlgorithm()
 {
-  _graph.reset();
-  _queue.reset();
   _start = nullptr;
   _goal = nullptr;
 }
@@ -61,16 +58,6 @@ void AStarAlgorithm<NodeT>::initialize(
   int & max_iterations,
   const int & max_on_approach_iterations)
 {
-  if (_graph) {
-    _graph.reset();
-  }
-
-  if (_queue) {
-    _queue.reset();
-  }
-
-  _graph = std::make_unique<Graph>();
-  _queue = std::make_unique<NodeQueue>();
   _traverse_unknown = allow_unknown;
   _max_iterations = max_iterations;
   _max_on_approach_iterations = max_on_approach_iterations;
@@ -86,29 +73,17 @@ void AStarAlgorithm<Node2D>::createGraph(
   if (dim_3_size != 1) {
     throw std::runtime_error("Node type Node2D cannot be given non-1 dim 3 quantization.");
   }
-
-  unsigned char * costs = costmap->getCharMap();
-
+  _costmap = costmap;
   _dim3_size = dim_3_size;  // 2D search MUST be 2D, not 3D or SE2.
+  clearGraph();
 
   if (getSizeX() != x_size || getSizeY() != y_size) {
     _x_size = x_size;
     _y_size = y_size;
     Node2D::initNeighborhood(_x_size, _motion_model);
-    _graph->clear();
-    _graph->reserve(x_size * y_size);
-    for (unsigned int i = 0; i != x_size * y_size; i++) {
-      _graph->emplace_back(costs[i], i);
-    }
-  } else {
-    for (unsigned int i = 0; i != x_size * y_size; i++) {
-      // Optimization: operator[] is used over at() for performance (no bound checking)
-      _graph->operator[](i).reset(costs[i], i);
-    }
   }
 }
 
-// Population order dim_3, X, Y to match getIndex expected structure
 template<>
 void AStarAlgorithm<NodeSE2>::createGraph(
   const unsigned int & x_size,
@@ -116,35 +91,17 @@ void AStarAlgorithm<NodeSE2>::createGraph(
   const unsigned int & dim_3_size,
   nav2_costmap_2d::Costmap2D * & costmap)
 {
+  _collision_checker = GridCollisionChecker(costmap);
+  _collision_checker.setFootprint(_footprint, _is_radius_footprint);
+
   _dim3_size = dim_3_size;
   unsigned int index;
-
-  if (!_collision_checker) {
-    _collision_checker = std::make_unique<GridCollisionChecker>(costmap);
-  }
-
-  _collision_checker->setFootprint(_footprint, _is_radius_footprint);
+  clearGraph();
 
   if (getSizeX() != x_size || getSizeY() != y_size) {
     _x_size = x_size;
     _y_size = y_size;
-    NodeSE2::initMotionModel(_motion_model, _x_size, _dim3_size, _search_info);
-    _graph->clear();
-    _graph->reserve(x_size * y_size * _dim3_size);
-
-    for (unsigned int j = 0; j != y_size; j++) {
-      for (unsigned int i = 0; i != x_size; i++) {
-        for (unsigned int k = 0; k != _dim3_size; k++) {
-          index = NodeSE2::getIndex(i, j, k, _x_size, _dim3_size);
-          _graph->emplace_back(_collision_checker.get(), index);
-        }
-      }
-    }
-  } else {
-    // #pragma omp parallel for schedule(static)
-    for (unsigned int i = 0; i < _graph->size(); i++) {
-      _graph->operator[](i).reset(_collision_checker.get());
-    }
+    NodeSE2::initMotionModel(_motion_model, _x_size, _y_size, _dim3_size, _search_info);
   }
 }
 
@@ -153,6 +110,18 @@ void AStarAlgorithm<NodeT>::setFootprint(nav2_costmap_2d::Footprint footprint, b
 {
   _footprint = footprint;
   _is_radius_footprint = use_radius;
+}
+
+template<>
+void AStarAlgorithm<Node2D>::addToGraph(const unsigned int & index)
+{
+  _graph.emplace(index, Node2D(_costmap->getCharMap()[index], index)); 
+}
+
+template<>
+void AStarAlgorithm<NodeSE2>::addToGraph(const unsigned int & index)
+{
+  _graph.emplace(index, NodeSE2(index));
 }
 
 template<>
@@ -165,7 +134,9 @@ void AStarAlgorithm<Node2D>::setStart(
     throw std::runtime_error("Node type Node2D cannot be given non-zero starting dim 3.");
   }
   unsigned int index = Node2D::getIndex(mx, my, getSizeX());
-  _start = &_graph->operator[](index);
+  addToGraph(index);
+  _start = &_graph.at(index);// TODO find vs at test speeds
+
 }
 
 template<>
@@ -175,7 +146,8 @@ void AStarAlgorithm<NodeSE2>::setStart(
   const unsigned int & dim_3)
 {
   unsigned int index = NodeSE2::getIndex(mx, my, dim_3, getSizeX(), getSizeDim3());
-  _start = &_graph->operator[](index);
+  addToGraph(index);
+  _start = &_graph.at(index); // TODO find vs at test speeds
   _start->setPose(
     Coordinates(
       static_cast<float>(mx),
@@ -194,7 +166,8 @@ void AStarAlgorithm<Node2D>::setGoal(
   }
 
   unsigned int index = Node2D::getIndex(mx, my, getSizeX());
-  _goal = &_graph->operator[](index);
+  addToGraph(index);
+  _goal = &_graph.at(index);// TODO find vs at test speeds
   _goal_coordinates = Node2D::Coordinates(mx, my);
 }
 
@@ -205,7 +178,8 @@ void AStarAlgorithm<NodeSE2>::setGoal(
   const unsigned int & dim_3)
 {
   unsigned int index = NodeSE2::getIndex(mx, my, dim_3, getSizeX(), getSizeDim3());
-  _goal = &_graph->operator[](index);
+  addToGraph(index);
+  _goal = &_graph.at(index);// TODO find vs at test speeds
   _goal_coordinates = NodeSE2::Coordinates(
     static_cast<float>(mx),
     static_cast<float>(my),
@@ -220,13 +194,8 @@ void AStarAlgorithm<NodeSE2>::setGoal(
 template<typename NodeT>
 bool AStarAlgorithm<NodeT>::areInputsValid()
 {
-  // Check if initialization was called
-  if (!_graph) {
-    throw std::runtime_error("Failed to compute path, initialization not called.");
-  }
-
   // Check if graph was filled in
-  if (_graph->empty()) {
+  if (_graph.empty()) {
     throw std::runtime_error("Failed to compute path, no costmap given.");
   }
 
@@ -236,12 +205,12 @@ bool AStarAlgorithm<NodeT>::areInputsValid()
   }
 
   // Check if ending point is valid
-  if (getToleranceHeuristic() < 0.001 && !_goal->isNodeValid(_traverse_unknown)) {
+  if (getToleranceHeuristic() < 0.001 && !_goal->isNodeValid(_traverse_unknown, _collision_checker)) {
     throw std::runtime_error("Failed to compute path, goal is occupied with no tolerance.");
   }
 
   // Check if starting point is valid
-  if (!_start->isNodeValid(_traverse_unknown)) {
+  if (!_start->isNodeValid(_traverse_unknown, _collision_checker)) {
     throw std::runtime_error("Starting point in lethal space! Cannot create feasible plan.");
   }
 
@@ -281,15 +250,16 @@ bool AStarAlgorithm<NodeT>::createPath(
       if (index < 0 || index >= max_index) {
         return false;
       }
-
-      neighbor_rtn = &_graph->operator[](index);
+   
+      addToGraph(index);
+      neighbor_rtn = &_graph.at(index);// TODO find vs at test speeds
       return true;
     };
 
-  while (iterations < getMaxIterations() && !_queue->empty()) {
+  while (iterations < getMaxIterations() && !_queue.empty()) {
 
     // 1) Pick Nbest from O s.t. min(f(Nbest)), remove from queue
-    current_node = getNode();
+    current_node = getNextNode();
 
     // We allow for nodes to be queued multiple times in case
     // shorter paths result in it, but we can visit only once
@@ -311,14 +281,15 @@ bool AStarAlgorithm<NodeT>::createPath(
       if (approach_iterations > getOnApproachMaxIterations() ||
         iterations + 1 == getMaxIterations())
       {
-        NodePtr node = &_graph->operator[](_best_heuristic_node.second);
+        NodePtr node = &_graph.at(_best_heuristic_node.second);// TODO find vs at test speeds
         return backtracePath(node, path);
       }
     }
 
     // 4) Expand neighbors of Nbest not visited
     neighbors.clear();
-    NodeT::getNeighbors(current_node, neighborGetter, _traverse_unknown, neighbors);
+    NodeT::getNeighbors(
+      current_node, neighborGetter, _collision_checker, _traverse_unknown, neighbors);
 
     for (neighbor_iterator = neighbors.begin();
       neighbor_iterator != neighbors.end(); ++neighbor_iterator)
@@ -398,17 +369,40 @@ typename AStarAlgorithm<NodeT>::NodePtr & AStarAlgorithm<NodeT>::getGoal()
 }
 
 template<typename NodeT>
-typename AStarAlgorithm<NodeT>::NodePtr AStarAlgorithm<NodeT>::getNode()
+typename AStarAlgorithm<NodeT>::NodePtr AStarAlgorithm<NodeT>::getNextNode()
 {
-  NodePtr node = _queue->top().second;
-  _queue->pop();
-  return node;
+  NodeBasic node = _queue.top().second;
+  _queue.pop();
+  return &_graph.at(node.getIndex()); // TODO find vs at test speeds
+}
+
+template <>
+typename AStarAlgorithm<NodeSE2>::NodePtr AStarAlgorithm<NodeSE2>::getNextNode()
+{
+  NodeBasic node = _queue.top().second;
+  _queue.pop();
+  NodePtr current_node = &_graph.at(node.getIndex()); // TODO find vs at test speeds
+
+  if (!current_node->wasVisited()) {
+    current_node->pose = node.pose;
+  }
+
+  return current_node;
 }
 
 template<typename NodeT>
 void AStarAlgorithm<NodeT>::addNode(const float cost, NodePtr & node)
 {
-  _queue->emplace(cost, node);
+  NodeBasic queued_node(node->getIndex());
+  _queue.emplace(cost, queued_node);
+}
+
+template<>
+void AStarAlgorithm<NodeSE2>::addNode(const float cost, NodePtr & node)
+{
+  NodeBasic queued_node(node->getIndex());
+  queued_node.pose = node->pose;
+  _queue.emplace(cost, queued_node);
 }
 
 template<typename NodeT>
@@ -443,9 +437,21 @@ float AStarAlgorithm<NodeT>::getHeuristicCost(const NodePtr & node)
 template<typename NodeT>
 void AStarAlgorithm<NodeT>::clearQueue()
 {
-  while (!_queue->empty()) {
-    _queue->pop();
-  }
+  NodeQueue q;
+  std::swap(_queue, q);
+  // TODO find out what's faster
+  // while (!_queue.empty()) {
+  //   _queue.pop();
+  // }
+}
+
+template<typename NodeT>
+void AStarAlgorithm<NodeT>::clearGraph()
+{
+  Graph g;
+  std::swap(_graph, g);
+  // TODO find out what's faster
+  // _graph.clear();
 }
 
 template<typename NodeT>
