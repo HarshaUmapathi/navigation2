@@ -39,6 +39,7 @@ namespace smac_planner
  * @class smac_planner::NodeBasic
  * @brief NodeBasic implementation for priority queue insertion
  */
+template<typename NodeT>
 class NodeBasic
 {
 public:
@@ -65,12 +66,15 @@ public:
     return _index;
   }
 
-  NodeSE2::Coordinates pose;// TODO generalize for 2D as well
-  NodeSE2 * graph_node_ptr; // TODO generalize for 2D as well
+  typename NodeT::Coordinates pose;  // Used by NodeSE2
+  NodeT * graph_node_ptr;
 
 protected:
   unsigned int _index;
 };
+
+template class NodeBasic<Node2D>;
+template class NodeBasic<NodeSE2>;
 
 }  // namespace smac_planner
 
