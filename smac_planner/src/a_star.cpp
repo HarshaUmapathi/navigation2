@@ -115,17 +115,14 @@ template<>
 typename AStarAlgorithm<Node2D>::NodePtr AStarAlgorithm<Node2D>::addToGraph(
   const unsigned int & index)
 {
-  auto rtn = _graph.emplace(index, Node2D(_costmap->getCharMap()[index], index));
-  return &(rtn.first->second);
-
+  return &(_graph.emplace(index, Node2D(_costmap->getCharMap()[index], index)).first->second);
 }
 
 template<>
 typename AStarAlgorithm<NodeSE2>::NodePtr AStarAlgorithm<NodeSE2>::addToGraph(
   const unsigned int & index)
 {
-  auto rtn = _graph.emplace(index, NodeSE2(index));
-  return &(rtn.first->second);
+  return &(_graph.emplace(index, NodeSE2(index)).first->second);
 }
 
 template<>
@@ -371,8 +368,6 @@ typename AStarAlgorithm<NodeSE2>::NodePtr AStarAlgorithm<NodeSE2>::getNextNode()
 {
   NodeBasic<NodeSE2> node = _queue.top().second;
   _queue.pop();
-  //TODO
-  // - graph to vector since no lookups (graph -> vector and update API calls, test speed)
 
   if (!node.graph_node_ptr->wasVisited()) {
     node.graph_node_ptr->pose = node.pose;
