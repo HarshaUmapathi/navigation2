@@ -43,6 +43,7 @@ AStarAlgorithm<NodeT>::AStarAlgorithm(
   _motion_model(motion_model),
   _collision_checker(nullptr)
 {
+  _graph.reserve(100000);
 }
 
 template<typename NodeT>
@@ -247,8 +248,7 @@ bool AStarAlgorithm<NodeT>::createPath(
       if (index < 0 || index >= max_index) {
         return false;
       }
-   
-      
+
       neighbor_rtn = addToGraph(index);
       return true;
     };
@@ -378,13 +378,19 @@ typename AStarAlgorithm<NodeSE2>::NodePtr AStarAlgorithm<NodeSE2>::getNextNode()
 {
   NodeBasic node = _queue.top().second;
   _queue.pop();
-  NodePtr current_node = &_graph.at(node.getIndex());
+  //TODO
+  //NodePtr current_node = &_graph.at(node.getIndex()); // entirely remove lookups!!!!
+  // if no lookups, can't I just not store them in the map? could just be a vector again.
+  // either way, maybe why first ones are heaviler is because the unordered_map was't reserved enough so resized
+  // so I should reserve some reasonable amount ahead of time (10k?)
+  // BUT APPARENTLY CLEAR will actuall keep the reserved memory! switch from the swap?
+  // copy logic for 2D as well, then test against Navfn to see if faster now!
 
-  if (!current_node->wasVisited()) {
-    current_node->pose = node.pose;
+  if (!node.graph_node_ptr->wasVisited()) {
+    node.graph_node_ptr->pose = node.pose;
   }
 
-  return current_node;
+  return node.graph_node_ptr;
 }
 
 template<typename NodeT>
@@ -399,6 +405,7 @@ void AStarAlgorithm<NodeSE2>::addNode(const float cost, NodePtr & node)
 {
   NodeBasic queued_node(node->getIndex());
   queued_node.pose = node->pose;
+  queued_node.graph_node_ptr = node;
   _queue.emplace(cost, queued_node);
 }
 
@@ -445,10 +452,11 @@ void AStarAlgorithm<NodeT>::clearQueue()
 template<typename NodeT>
 void AStarAlgorithm<NodeT>::clearGraph()
 {
-  Graph g;
-  std::swap(_graph, g);
+  // Graph g;
+  // g.reserve(100000);
+  // std::swap(_graph, g);
   // TODO find out what's faster
-  // _graph.clear();
+  _graph.clear();
 }
 
 template<typename NodeT>
