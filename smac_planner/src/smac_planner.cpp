@@ -372,7 +372,6 @@ nav_msgs::msg::Path SmacPlanner::createPlan(
     duration<double> time_span = duration_cast<duration<double>>(b - a);
     cout << "It took " << time_span.count() * 1000 <<
       " milliseconds with " << num_iterations << " iterations." << endl;
-      cout << "RATIO: " << time_span.count() * 1000 / num_iterations * 1000 << endl;
 #endif
     return plan;
   }

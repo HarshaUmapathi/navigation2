@@ -57,6 +57,7 @@ public:
   typedef std::pair<float, NodeBasic<NodeT>> NodeElement;
   typedef typename NodeT::Coordinates Coordinates;
   typedef typename NodeT::CoordinateVector CoordinateVector;
+  typedef typename NodeVector::iterator NeighborIterator;
 
   struct NodeComparator
   {
@@ -201,7 +202,7 @@ private:
    * @param node Pointer to current node
    * @return Reference accumulated cost between the nodes
    */
-  inline float getAccumulatedCost(NodePtr & node);
+  inline float & getAccumulatedCost(NodePtr & node);
 
   /**
    * @brief Get cost of heuristic of node

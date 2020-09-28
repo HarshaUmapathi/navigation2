@@ -49,8 +49,6 @@ AStarAlgorithm<NodeT>::AStarAlgorithm(
 template<typename NodeT>
 AStarAlgorithm<NodeT>::~AStarAlgorithm()
 {
-  _start = nullptr;
-  _goal = nullptr;
 }
 
 template<typename NodeT>
@@ -139,9 +137,7 @@ void AStarAlgorithm<Node2D>::setStart(
   if (dim_3 != 0) {
     throw std::runtime_error("Node type Node2D cannot be given non-zero starting dim 3.");
   }
-  unsigned int index = Node2D::getIndex(mx, my, getSizeX());
-  _start = addToGraph(index);
-
+  _start = addToGraph(Node2D::getIndex(mx, my, getSizeX()));
 }
 
 template<>
@@ -150,8 +146,7 @@ void AStarAlgorithm<NodeSE2>::setStart(
   const unsigned int & my,
   const unsigned int & dim_3)
 {
-  unsigned int index = NodeSE2::getIndex(mx, my, dim_3, getSizeX(), getSizeDim3());
-  _start = addToGraph(index);
+  _start = addToGraph(NodeSE2::getIndex(mx, my, dim_3, getSizeX(), getSizeDim3()));
   _start->setPose(
     Coordinates(
       static_cast<float>(mx),
@@ -169,8 +164,7 @@ void AStarAlgorithm<Node2D>::setGoal(
     throw std::runtime_error("Node type Node2D cannot be given non-zero goal dim 3.");
   }
 
-  unsigned int index = Node2D::getIndex(mx, my, getSizeX());
-  _goal = addToGraph(index);
+  _goal = addToGraph(Node2D::getIndex(mx, my, getSizeX()));
   _goal_coordinates = Node2D::Coordinates(mx, my);
 }
 
@@ -180,8 +174,7 @@ void AStarAlgorithm<NodeSE2>::setGoal(
   const unsigned int & my,
   const unsigned int & dim_3)
 {
-  unsigned int index = NodeSE2::getIndex(mx, my, dim_3, getSizeX(), getSizeDim3());
-  _goal = addToGraph(index);
+  _goal = addToGraph(NodeSE2::getIndex(mx, my, dim_3, getSizeX(), getSizeDim3()));
   _goal_coordinates = NodeSE2::Coordinates(
     static_cast<float>(mx),
     static_cast<float>(my),
@@ -238,7 +231,7 @@ bool AStarAlgorithm<NodeT>::createPath(
   float g_cost = 0.0;
   NodeVector neighbors;
   int approach_iterations = 0;
-  typename NodeVector::iterator neighbor_iterator;
+  NeighborIterator neighbor_iterator;
 
   // Given an index, return a node ptr reference if its collision-free and valid
   const unsigned int max_index = getSizeX() * getSizeY() * getSizeDim3();
@@ -414,7 +407,7 @@ float AStarAlgorithm<NodeT>::getTraversalCost(
 }
 
 template<typename NodeT>
-float AStarAlgorithm<NodeT>::getAccumulatedCost(NodePtr & node)
+float & AStarAlgorithm<NodeT>::getAccumulatedCost(NodePtr & node)
 {
   return node->getAccumulatedCost();
 }
@@ -439,20 +432,14 @@ void AStarAlgorithm<NodeT>::clearQueue()
 {
   NodeQueue q;
   std::swap(_queue, q);
-  // TODO find out what's faster
-  // while (!_queue.empty()) {
-  //   _queue.pop();
-  // }
 }
 
 template<typename NodeT>
 void AStarAlgorithm<NodeT>::clearGraph()
 {
-  // Graph g;
-  // g.reserve(100000);
-  // std::swap(_graph, g);
-  // TODO find out what's faster
-  _graph.clear();
+  Graph g;
+  g.reserve(100000);
+  std::swap(_graph, g);
 }
 
 template<typename NodeT>
