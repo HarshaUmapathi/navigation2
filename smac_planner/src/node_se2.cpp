@@ -330,8 +330,10 @@ void NodeSE2::computeWavefrontHeuristic(
 
   const unsigned int & size_x = _motion_model.size_x;
   const int size_x_int = static_cast<int>(size_x);
+  const unsigned int size_y = costmap->getSizeInCellsY();
   const unsigned int goal_index = goal_y * size_x + goal_x;
   const unsigned int start_index = start_y * size_x + start_x;
+  unsigned int mx, my, mx_idx, my_idx;
 
   std::queue<unsigned int> q;
   q.emplace(goal_index);
@@ -349,16 +351,29 @@ void NodeSE2::computeWavefrontHeuristic(
     idx = q.front();
     q.pop();
 
+    my_idx = idx / size_x;
+    mx_idx = idx - (my_idx * size_x);
+
     // find neighbors
     for (unsigned int i = 0; i != neighborhood.size(); i++) {
       unsigned int new_idx = static_cast<unsigned int>(static_cast<int>(idx) + neighborhood[i]);
       unsigned int last_wave_cost = _wavefront_heuristic[idx];
 
       // if neighbor is unvisited and non-lethal, set N and add to queue
-      if (new_idx > 0 && new_idx < size_x * costmap->getSizeInCellsY() &&
+      if (new_idx > 0 && new_idx < size_x * size_y &&
           _wavefront_heuristic[new_idx] == 0 &&
           static_cast<float>(costmap->getCost(idx)) < INSCRIBED)
-      {  // TODO check for wrap around
+      {
+        my = new_idx / size_x;
+        mx = new_idx - (my * size_x);
+
+        if (mx == 0 && mx_idx >= size_x - 1 || mx >= size_x - 1 && mx_idx == 0) {
+          continue;
+        }
+        if (my == 0 && my_idx >= size_y - 1 || my >= size_y - 1 && my_idx == 0) {
+          continue;
+        }
+
         _wavefront_heuristic[new_idx] = last_wave_cost + 1;
         q.emplace(idx + neighborhood[i]);
       }
