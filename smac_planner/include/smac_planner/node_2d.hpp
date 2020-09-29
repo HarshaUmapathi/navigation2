@@ -81,7 +81,6 @@ public:
   /**
    * @brief Reset method for new search
    * @param cost_in The costmap cost at this node
-   * @param index The index of this node for self-reference
    */
   void reset(const unsigned char & cost);
   /**
