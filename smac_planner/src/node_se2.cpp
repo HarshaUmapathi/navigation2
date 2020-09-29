@@ -313,23 +313,25 @@ void NodeSE2::computeWavefrontHeuristic(
   const unsigned int & start_x, const unsigned int & start_y,
   const unsigned int & goal_x, const unsigned int & goal_y)
 {
-  steady_clock::time_point a = steady_clock::now();
+  unsigned int size = costmap->getSizeInCellsX() * costmap->getSizeInCellsY();
+  if (_wavefront_heuristic.size() == size) {
+    // must reset all values
+    for (unsigned int i = 0; i != _wavefront_heuristic.size(); i++) {
+      _wavefront_heuristic[i] = 0;
+    }
+  } else {
+    unsigned int wavefront_size = _wavefront_heuristic.size();
+    _wavefront_heuristic.resize(size, 0);
+    // must reset values for non-constructed indices
+    for (unsigned int i = 0; i != wavefront_size; i++) {
+      _wavefront_heuristic[i] = 0;
+    }
+  }
 
-  // TODO static map so that this isn't updating over time? just the first iteration?
-  // that assumes same goal though, can this be updated with shifting rather than queing if goal moves?
-  // but at least the size remains the same and we don't have to remark the obstacles
-
-  // TODO validate this works
-  // TODO validate that this makes things faster
-
-  _wavefront_heuristic.resize(
-    costmap->getSizeInCellsX() * costmap->getSizeInCellsY(), 0);
-
-  unsigned int & size_x = _motion_model.size_x;
-  int size_x_int = static_cast<int>(size_x);
-
-  unsigned int goal_index = goal_y * size_x + goal_x;
-  unsigned int start_index = start_y * size_x + start_x;
+  const unsigned int & size_x = _motion_model.size_x;
+  const int size_x_int = static_cast<int>(size_x);
+  const unsigned int goal_index = goal_y * size_x + goal_x;
+  const unsigned int start_index = start_y * size_x + start_x;
 
   std::queue<unsigned int> q;
   q.emplace(goal_index);
@@ -337,7 +339,7 @@ void NodeSE2::computeWavefrontHeuristic(
   unsigned int idx = goal_index;
   _wavefront_heuristic[idx] = 2;
 
-  std::vector<int> neighborhood = {1, -1,  // left right
+  static const std::vector<int> neighborhood = {1, -1,  // left right
     size_x_int, -size_x_int,  // up down
     size_x_int + 1, size_x_int - 1,  // upper diagonals
     -size_x_int + 1, -size_x_int - 1};  // lower diagonals
@@ -362,12 +364,6 @@ void NodeSE2::computeWavefrontHeuristic(
       }
     }
   }
-
-  // this is suspiciously fast. TODO
-    steady_clock::time_point b = steady_clock::now();
-    duration<double> time_span = duration_cast<duration<double>>(b - a);
-    std::cout << "It took " << time_span.count() * 1000 <<
-      " milliseconds to compute wavefront heuristic" << std::endl;
 }
 
 void NodeSE2::getNeighbors(
