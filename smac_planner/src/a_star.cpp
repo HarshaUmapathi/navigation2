@@ -200,7 +200,9 @@ bool AStarAlgorithm<NodeT>::areInputsValid()
   }
 
   // Check if ending point is valid
-  if (getToleranceHeuristic() < 0.001 && !_goal->isNodeValid(_traverse_unknown, _collision_checker)) {
+  if (getToleranceHeuristic() < 0.001 &&
+    !_goal->isNodeValid(_traverse_unknown, _collision_checker))
+  {
     throw std::runtime_error("Failed to compute path, goal is occupied with no tolerance.");
   }
 
@@ -370,7 +372,7 @@ typename AStarAlgorithm<NodeT>::NodePtr AStarAlgorithm<NodeT>::getNextNode()
   return node.graph_node_ptr;
 }
 
-template <>
+template<>
 typename AStarAlgorithm<NodeSE2>::NodePtr AStarAlgorithm<NodeSE2>::getNextNode()
 {
   NodeBasic<NodeSE2> node = _queue.top().second;
