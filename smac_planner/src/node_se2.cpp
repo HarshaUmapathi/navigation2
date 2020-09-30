@@ -14,14 +14,19 @@
 
 #include <math.h>
 #include <chrono>
+#include <vector>
+#include <memory>
+#include <algorithm>
+#include <queue>
+#include <limits>
 
-#include <ompl/base/ScopedState.h>
-#include <ompl/base/spaces/DubinsStateSpace.h>
-#include <ompl/base/spaces/ReedsSheppStateSpace.h>
+#include "ompl/base/ScopedState.h"
+#include "ompl/base/spaces/DubinsStateSpace.h"
+#include "ompl/base/spaces/ReedsSheppStateSpace.h"
 
 #include "smac_planner/node_se2.hpp"
 
-using namespace std::chrono;
+using namespace std::chrono;  // NOLINT
 
 namespace smac_planner
 {

@@ -20,7 +20,8 @@
 namespace smac_planner
 {
 
-class GridCollisionChecker : public nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>
+class GridCollisionChecker
+: public nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>
 {
 public:
   GridCollisionChecker(

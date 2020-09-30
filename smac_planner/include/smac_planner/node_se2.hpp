@@ -25,7 +25,7 @@
 #include <utility>
 #include <limits>
 
-#include <ompl/base/StateSpace.h>
+#include "ompl/base/StateSpace.h"
 
 #include "smac_planner/constants.hpp"
 #include "smac_planner/types.hpp"

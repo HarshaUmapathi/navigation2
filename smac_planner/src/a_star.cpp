@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. Reserved.
 
+#include <omp.h>
+
 #include <cmath>
 #include <stdexcept>
 #include <memory>
@@ -19,11 +21,11 @@
 #include <limits>
 #include <type_traits>
 #include <chrono>
-#include <omp.h>
 #include <thread>
+#include <utility>
 
 #include "smac_planner/a_star.hpp"
-using namespace std::chrono;
+using namespace std::chrono;  // NOLINT
 
 namespace smac_planner
 {
@@ -253,7 +255,6 @@ bool AStarAlgorithm<NodeT>::createPath(
     };
 
   while (iterations < getMaxIterations() && !_queue.empty()) {
-
     // 1) Pick Nbest from O s.t. min(f(Nbest)), remove from queue
     current_node = getNextNode();
 
