@@ -49,7 +49,8 @@ public:
    * @param index The index of this node for self-reference
    */
   explicit NodeBasic(const unsigned int index)
-  : _index(index)
+  : _index(index),
+    graph_node_ptr(nullptr)
   {}
 
   /**

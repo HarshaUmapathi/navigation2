@@ -31,10 +31,18 @@ target_link_libraries(test_nodese2
   ${library_name}
 )
 
-
-
-
 # Test NodeBasic
+ament_add_gtest(test_nodebasic
+  test_nodese2.cpp
+)
+ament_target_dependencies(test_nodebasic
+  ${dependencies}
+)
+target_link_libraries(test_nodebasic
+  ${library_name}
+)
+
+
 
 
 # Test collision checker
