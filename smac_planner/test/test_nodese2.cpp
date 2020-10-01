@@ -163,7 +163,7 @@ TEST(Node2DTest, test_node_2d_neighbors)
   EXPECT_NEAR(smac_planner::NodeSE2::_motion_model.projections[2]._theta, -4.07283, 0.01);
 
   smac_planner::NodeSE2::initMotionModel(
-        smac_planner::MotionModel::REEDS_SHEPP, size_x, size_y, size_theta, info);
+    smac_planner::MotionModel::REEDS_SHEPP, size_x, size_y, size_theta, info);
 
   EXPECT_EQ(smac_planner::NodeSE2::_motion_model.projections.size(), 6u);
   EXPECT_NEAR(smac_planner::NodeSE2::_motion_model.projections[0]._x, 1.41421, 0.01);

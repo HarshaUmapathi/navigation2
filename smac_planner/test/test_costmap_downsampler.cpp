@@ -45,7 +45,7 @@ TEST(CostmapDownsampler, costmap_downsample_test)
 
   // downsample it
   downsampler.initialize("map", "unused_topic", &costmapA, 2);
-  nav2_costmap_2d::Costmap2D * downsampledCostmapA = downsampler.downsample(2);  
+  nav2_costmap_2d::Costmap2D * downsampledCostmapA = downsampler.downsample(2);
 
   // validate it
   EXPECT_EQ(downsampledCostmapA->getCost(0, 0), 100);
@@ -58,7 +58,7 @@ TEST(CostmapDownsampler, costmap_downsample_test)
 
   // downsample it
   downsampler.initialize("map", "unused_topic", &costmapB, 4);
-  nav2_costmap_2d::Costmap2D * downsampledCostmapB = downsampler.downsample(4);  
+  nav2_costmap_2d::Costmap2D * downsampledCostmapB = downsampler.downsample(4);
 
   // validate size
   EXPECT_EQ(downsampledCostmapB->getSizeInCellsX(), 1u);
