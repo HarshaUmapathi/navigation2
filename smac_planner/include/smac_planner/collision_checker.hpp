@@ -13,6 +13,7 @@
 // limitations under the License. Reserved.
 
 #include "nav2_costmap_2d/footprint_collision_checker.hpp"
+#include "smac_planner/constants.hpp"
 
 #ifndef SMAC_PLANNER__COLLISION_CHECKER_HPP_
 #define SMAC_PLANNER__COLLISION_CHECKER_HPP_

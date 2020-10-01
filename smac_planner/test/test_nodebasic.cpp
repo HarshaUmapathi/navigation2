@@ -37,13 +37,13 @@ RclCppFixture g_rclcppfixture;
 
 TEST(NodeBasicTest, test_node_basic)
 {
-  smac_planner::NodeBasic<NodeSE2> node(50);
+  smac_planner::NodeBasic<smac_planner::NodeSE2> node(50);
 
   EXPECT_EQ(node.getIndex(), 50u);
   EXPECT_EQ(node.graph_node_ptr, nullptr);
 
-  smac_planner::NodeBasic<Node2D> node2(100);
+  smac_planner::NodeBasic<smac_planner::Node2D> node2(100);
 
-  EXPECT_EQ(node.getIndex(), 100u);
-  EXPECT_EQ(node.graph_node_ptr, nullptr);
+  EXPECT_EQ(node2.getIndex(), 100u);
+  EXPECT_EQ(node2.graph_node_ptr, nullptr);
 }

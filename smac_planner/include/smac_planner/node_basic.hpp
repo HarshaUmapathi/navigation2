@@ -29,6 +29,7 @@
 
 #include "smac_planner/constants.hpp"
 #include "smac_planner/node_se2.hpp"
+#include "smac_planner/node_2d.hpp"
 #include "smac_planner/types.hpp"
 #include "smac_planner/collision_checker.hpp"
 

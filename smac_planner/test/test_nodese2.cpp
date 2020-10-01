@@ -141,8 +141,8 @@ TEST(Node2DTest, test_node_2d_neighbors)
   info.non_straight_penalty = 1.4;
   info.reverse_penalty = 2.1;
   info.minimum_turning_radius = 4;  // 0.2 in grid coordinates
-  unsigned int size_x = 10;
-  unsigned int size_y = 10;
+  unsigned int size_x = 100;
+  unsigned int size_y = 100;
   unsigned int size_theta = 72;
   smac_planner::NodeSE2::initMotionModel(
     smac_planner::MotionModel::DUBIN, size_x, size_y, size_theta, info);
@@ -190,13 +190,14 @@ TEST(Node2DTest, test_node_2d_neighbors)
   EXPECT_NEAR(smac_planner::NodeSE2::_motion_model.projections[5]._y, -0.25, 0.01);
   EXPECT_NEAR(smac_planner::NodeSE2::_motion_model.projections[5]._theta, 4.07283, 0.01);
 
-  nav2_costmap_2d::Costmap2D costmapA(10, 10, 0.05, 0.0, 0.0, 0);
+  nav2_costmap_2d::Costmap2D costmapA(100, 100, 0.05, 0.0, 0.0, 0);
   smac_planner::GridCollisionChecker checker(&costmapA);
   smac_planner::NodeSE2 * node = new smac_planner::NodeSE2(49);
   std::function<bool(const unsigned int &, smac_planner::NodeSE2 * &)> neighborGetter =
     [&, this](const unsigned int & index, smac_planner::NodeSE2 * & neighbor_rtn) -> bool
     {
-      return true;
+      // because we don't return a real object
+      return false;
     };
 
   smac_planner::NodeSE2::NodeVector neighbors;

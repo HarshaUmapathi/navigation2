@@ -33,7 +33,7 @@ target_link_libraries(test_nodese2
 
 # Test NodeBasic
 ament_add_gtest(test_nodebasic
-  test_nodese2.cpp
+  test_nodebasic.cpp
 )
 ament_target_dependencies(test_nodebasic
   ${dependencies}
@@ -42,10 +42,22 @@ target_link_libraries(test_nodebasic
   ${library_name}
 )
 
-
-
-
 # Test collision checker
+ament_add_gtest(test_collision_checker
+  test_collision_checker.cpp
+)
+ament_target_dependencies(test_collision_checker
+  ${dependencies}
+)
+target_link_libraries(test_collision_checker
+  ${library_name}
+)
+
+
+
+
+
+
 
 # A*
 
