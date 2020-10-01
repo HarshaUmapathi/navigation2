@@ -239,7 +239,7 @@ float NodeSE2::getTraversalCost(const NodePtr & child)
   float travel_cost = 0.0;
   float travel_cost_raw = NodeSE2::neutral_cost + _motion_model.cost_penalty * normalized_cost;
 
-  if (getMotionPrimitiveIndex() == 0 || getMotionPrimitiveIndex() == 3) {
+  if (child->getMotionPrimitiveIndex() == 0 || child->getMotionPrimitiveIndex() == 3) {
     // straight motion, no additional costs to be applied
     travel_cost = travel_cost_raw;
   } else {
