@@ -21,7 +21,6 @@
 
 #include "smac_planner/a_star.hpp"
 #include "smac_planner/smoother.hpp"
-#include "smac_planner/upsampler.hpp"
 #include "smac_planner/costmap_downsampler.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 #include "nav2_core/global_planner.hpp"
@@ -105,7 +104,6 @@ public:
 protected:
   std::unique_ptr<AStarAlgorithm<Node2D>> _a_star;
   std::unique_ptr<Smoother> _smoother;
-  std::unique_ptr<Upsampler> _upsampler;
   nav2_costmap_2d::Costmap2D * _costmap;
   std::unique_ptr<CostmapDownsampler> _costmap_downsampler;
   nav2_util::LifecycleNode::SharedPtr _node;
@@ -114,10 +112,8 @@ protected:
   int _downsampling_factor;
   bool _downsample_costmap;
   rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>::SharedPtr _raw_plan_publisher;
-  rclcpp_lifecycle::LifecyclePublisher<nav_msgs::msg::Path>::SharedPtr _smoothed_plan_publisher;
   SmootherParams _smoother_params;
   OptimizerParams _optimizer_params;
-  int _upsampling_ratio;
   double _max_planning_time;
 };
 
