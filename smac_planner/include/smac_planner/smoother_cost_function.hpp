@@ -133,7 +133,7 @@ public:
 
       // compute cost
       addSmoothingResidual(_params.smooth_weight, xi, xi_p1, xi_m1, cost_raw);
-      addCurvatureResidual(_params.curvature_weight, xi, xi_p1, xi_m1, curvature_params, cost_raw);  //TODO retune from fix
+      addCurvatureResidual(_params.curvature_weight, xi, xi_p1, xi_m1, curvature_params, cost_raw);
       addDistanceResidual(_params.distance_weight, xi, _original_path->at(i), cost_raw);
 
       if (valid_coords = _costmap->worldToMap(xi[0], xi[1], mx, my)) {
@@ -322,12 +322,15 @@ protected:
     const Eigen::Vector2d jacobian_im1 = u *
       (common_prefix * p2 + (common_suffix * d_delta_xi_d_xi));
     const Eigen::Vector2d jacobian_ip1 = u * (common_prefix * p1);
-    // j0 += weight * jacobian[0]; // TODO try with the prior xi-1 and xi+1s
-    // j1 += weight * jacobian[1];
-    j0 += weight *
-      (jacobian_im1[0] + 2 * jacobian[0] + jacobian_ip1[0]);  // xi x component of partial-derivative  // TODO I think better without this?
-    j1 += weight *
-      (jacobian_im1[1] + 2 * jacobian[1] + jacobian_ip1[1]);  // xi y component of partial-derivative  // Maybe reflects issue in not using xi-1/+1's
+
+    // Old formulation we may require again.
+    // j0 += weight *
+    //   (jacobian_im1[0] + 2 * jacobian[0] + jacobian_ip1[0]);
+    // j1 += weight *
+    //   (jacobian_im1[1] + 2 * jacobian[1] + jacobian_ip1[1]);
+
+    j0 += weight * jacobian[0];  // xi x component of partial-derivative
+    j1 += weight * jacobian[1];  // xi x component of partial-derivative
   }
 
   /**
@@ -408,7 +411,7 @@ protected:
     }
 
     const Eigen::Vector2d grad = getCostmapGradient(mx, my);
-    const double common_prefix = -2 * _params.costmap_factor * weight * value * value;
+    const double common_prefix = -2.0 * _params.costmap_factor * weight * value * value;
 
     j0 += common_prefix * grad[0];  // xi x component of partial-derivative
     j1 += common_prefix * grad[1];  // xi y component of partial-derivative

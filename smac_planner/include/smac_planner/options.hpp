@@ -30,30 +30,6 @@ struct SmootherParams
 {
   /**
    * @brief A constructor for smac_planner::SmootherParams
-   * @param smooth Smoothing term weight
-   * @param costmap Costmap term weight
-   * @param distance Distance term weight
-   * @param curve max curvature term weight
-   * @param max_curve max curvature value, as delta phi / | delta X |
-   */
-  SmootherParams(
-    const double & smooth,
-    const double & costmap,
-    const double & dist,
-    const double & curve,
-    const double & max_curve,
-    const double & cost_scale_factor)
-  : smooth_weight(smooth),
-    costmap_weight(costmap),
-    distance_weight(dist),
-    curvature_weight(curve),
-    max_curvature(max_curve),
-    costmap_factor(cost_scale_factor)
-  {
-  }
-
-  /**
-   * @brief A constructor for smac_planner::SmootherParams
    */
   SmootherParams()
   {
@@ -81,9 +57,6 @@ struct SmootherParams
     nav2_util::declare_parameter_if_not_declared(
       node, local_name + "w_smooth", rclcpp::ParameterValue(15000.0));
     node->get_parameter(local_name + "w_smooth", smooth_weight);
-    nav2_util::declare_parameter_if_not_declared(
-      node, local_name + "max_curve", rclcpp::ParameterValue(7.8));
-    node->get_parameter(local_name + "max_curve", max_curvature);
     nav2_util::declare_parameter_if_not_declared(
       node, local_name + "cost_scaling_factor", rclcpp::ParameterValue(10.0));
     node->get_parameter(local_name + "cost_scaling_factor", costmap_factor);

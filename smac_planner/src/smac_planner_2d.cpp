@@ -56,6 +56,7 @@ void SmacPlanner2D::configure(
   int max_iterations;
   int max_on_approach_iterations;
   bool smooth_path;
+  double minimum_turning_radius;
   std::string motion_model_for_search;
 
   // General planner params
@@ -79,8 +80,11 @@ void SmacPlanner2D::configure(
     _node, name + ".max_on_approach_iterations", rclcpp::ParameterValue(1000));
   _node->get_parameter(name + ".max_on_approach_iterations", max_on_approach_iterations);
   nav2_util::declare_parameter_if_not_declared(
-    _node, name + ".smooth_path", rclcpp::ParameterValue(true));
+    _node, name + ".smooth_path", rclcpp::ParameterValue(false));
   _node->get_parameter(name + ".smooth_path", smooth_path);
+  nav2_util::declare_parameter_if_not_declared(
+    _node, name + ".minimum_turning_radius", rclcpp::ParameterValue(0.2));
+  _node->get_parameter(name + ".minimum_turning_radius", minimum_turning_radius);
 
   nav2_util::declare_parameter_if_not_declared(
     _node, name + ".max_planning_time_ms", rclcpp::ParameterValue(1000.0));
@@ -122,6 +126,7 @@ void SmacPlanner2D::configure(
     _smoother = std::make_unique<Smoother>();
     _optimizer_params.get(_node.get(), name);
     _smoother_params.get(_node.get(), name);
+    _smoother_params.max_curvature = 1.0f / minimum_turning_radius;
     _smoother->initialize(_optimizer_params);
   }
 

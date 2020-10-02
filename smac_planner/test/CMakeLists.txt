@@ -85,3 +85,14 @@ ament_target_dependencies(test_smac_2d
 target_link_libraries(test_smac_2d
   ${library_name}_2d
 )
+
+# Test smoother
+ament_add_gtest(test_smoother
+  test_smoother.cpp
+)
+ament_target_dependencies(test_smoother
+  ${dependencies}
+)
+target_link_libraries(test_smoother
+  ${library_name}_2d
+)

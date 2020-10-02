@@ -248,48 +248,40 @@ map_saver:
 
 planner_server:
   ros__parameters:
-    planner_plugin_types: ["smac_planner/SmacPlanner"] #nav2_navfn_planner/NavfnPlanner #smac_planner/SmacPlanner
+    planner_plugin_types: ["smac_planner/SmacPlanner"]
     planner_plugin_ids: ["GridBased"]
-    GridBased.use_astar: True # navfn only
     use_sim_time: True
 
     GridBased:
       tolerance: 0.5                    # tolerance for planning if unable to reach exact pose, in meters, for 2D node
-      downsample_costmap: false         # whether or not to downsample the map to the specified resolution
-      downsampling_factor: 1            # multiplier for the resolution of the costmap layer
+      downsample_costmap: false         # whether or not to downsample the map
+      downsampling_factor: 1            # multiplier for the resolution of the costmap layer (e.g. 2 on a 5cm costmap would be 10cm)
       allow_unknown: false              # allow traveling in unknown space
-      max_iterations: -1                # maximum total iterations to search for before returning
+      max_iterations: -1                # maximum total iterations to search for before failing
       max_on_approach_iterations: 1000  # maximum number of iterations to attempt to reach goal once in tolerance, 2D only
       max_planning_time_ms: 2000.0      # max time in ms for planner to plan, smooth, and upsample. Will scale maximum smoothing and upsampling times based on remaining time after planning.
-      smooth_path: false                # Whether to smooth searched path
+      smooth_path: true                 # Whether to smooth searched path
       motion_model_for_search: "DUBIN"  # 2D Moore, Von Neumann; SE2 Dubin, Redds-Shepp
       angle_quantization_bins: 72       # For SE2 node: Number of angle bins for search, must be 1 for 2D node (no angle search)
-      minimum_turning_radius: 0.20      # For SE2 node: minimum turning radius in m of your vehicle
-      # To turn off penalty, set to 1 (except change_penalty to 0)
-      reverse_penalty: 2.1              # For SE2 node: penalty to apply if motion is reversing, must be => 1
-      change_penalty: 0.60              # For SE2 node: penalty to apply if motion is changing directions
-      non_straight_penalty: 1.15        # For SE2 node: penalty to apply if motion is non-straight, must be => 1
-      cost_penalty: 1.1                 # For SE2 node: penalty to apply to higher cost zones
+      minimum_turning_radius: 0.20      # For SE2 node & smoother: minimum turning radius in m of path / vehicle
+      reverse_penalty: 2.1              # For Reeds-Shepp model: penalty to apply if motion is reversing, must be => 1
+      change_penalty: 0.20              # For SE2 node: penalty to apply if motion is changing directions, must be >= 0
+      non_straight_penalty: 1.10        # For SE2 node: penalty to apply if motion is non-straight, must be => 1
+      cost_penalty: 1.3                 # For SE2 node: penalty to apply to higher cost zones
 
       smoother:
-        # smoother weights
-        # need to create weights for common resolutions (2.5, 5, 10)
         smoother:
-          w_curve: 30.0 #3.0 # range 0 - 50
-          w_dist: 0.0 #300 w/0 cost
-          w_smooth: 15000.0 #15000
-          w_cost: 0.025         # Use higher value when using the costmap downsampler (e.g. use 2.5 for downsampling_factor = 3)
-          max_curve: 2.0        # translates to |delta angle| / |delta distance|, where distance is ~2x costmap resolution
-          cost_scaling_factor: 1.0 # this should match the inflation layer's parameter
-          # 7.8 in 5cm resolution (45 deg / 10cm)
-          # 4.0 in 10cm resolution (45 deg / 20 cm)
-          # 
+          w_curve: 30.0                 # weight to minimize curvature of path
+          w_dist: 0.0                   # weight to bind path to original as optional replacement for cost weight
+          w_smooth: 30000.0             # weight to maximize smoothness of path
+          w_cost: 0.025                 # weight to steer robot away from collision and cost
+          cost_scaling_factor: 10.0     # this should match the inflation layer's parameter
 
-        # I do not recommend typical users mess with this other than max_time if it can use more time or needs to be faster
+        # I do not recommend users mess with this unless they're doing production tuning
         optimizer:
-          max_time: 0.10         # 100ms
-          max_iterations: 500    # max iterations, though shouldn't hit this in under 100ms, but don't want this to be the limiter
-          debug_optimizer: false
+          max_time: 0.10                # maximum compute time for smoother
+          max_iterations: 500           # max iterations of smoother
+          debug_optimizer: false        # print debug info
           gradient_tol: 1.0e-10
           fn_tol: 1.0e-20
           param_tol: 1.0e-15

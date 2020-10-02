@@ -38,7 +38,8 @@
 //   We have A* path smoothed to kinematic paramrters. Even without explicit modelling of ackermann or limited curvature kinematics, you can get it here. In fact, while a little hand wavey, if you plan in a full potential field with default settings, it steers intentionally in the center of spaces. If that space is built for a robot or vehicle (eg road, or aisle, or open space, or office) then you’re pseduo-promised that the curvature can be valid for your vehicle. Now the then the boundry conditions (initial and final state) are not. For alot of cases thats sufficient bc of an intelligent local planner based on dubin curves or something, but if not, we have a full hybrid A* as well.  // NOLINT
 //   Ex of robot to limit curvature: industrial for max speed without dumping load, ackermann, legged to prop forward to minimize slow down for off acis motion, diff to not whip around  // NOLINT
 //  Show path, no map -- Show term smoothing, lovely, no map -- Then map, welp, thats useless
-
+// - we very carefully tuned and designed the penalties to be cost aware so smoothing isn't strictly necessary
+    // PUBLISH??!?!?! this means no smoothing required instead in optimization
 // astar timeout, max duration, optimizer gets rest or until its set maximum. Test time before/after A* but not in it, that would slow down. if over, send log warning like DWB  // NOLINT
 
 // if collision in smoothed path, anchor that point and then re-run until successful (helpful in narrow spaces).  // NOLINT
@@ -48,8 +49,6 @@
 // People are used to these smooth paths from Navigation Function approaches and I'm not sure anyone would be  // NOLINT
 // happy if I just gave them a A* without it. Its stil quite fast but its much faster than NavFn without the smoother.  // NOLINT
 // If you have a half decent controller though, its largely unneeded (I tested, its fine, its just not visually appealing).  // NOLINT
-
-// seperate createPlan into a few functions
 
 #include <string>
 #include <memory>
@@ -125,11 +124,11 @@ void SmacPlanner::configure(
     _node, name + ".max_iterations", rclcpp::ParameterValue(-1));
   _node->get_parameter(name + ".max_iterations", max_iterations);
   nav2_util::declare_parameter_if_not_declared(
-    _node, name + ".smooth_path", rclcpp::ParameterValue(true));
+    _node, name + ".smooth_path", rclcpp::ParameterValue(false));
   _node->get_parameter(name + ".smooth_path", smooth_path);
 
   nav2_util::declare_parameter_if_not_declared(
-    _node, name + ".minimum_turning_radius", rclcpp::ParameterValue(1.0));
+    _node, name + ".minimum_turning_radius", rclcpp::ParameterValue(0.2));
   _node->get_parameter(name + ".minimum_turning_radius", search_info.minimum_turning_radius);
 
   nav2_util::declare_parameter_if_not_declared(
@@ -176,6 +175,7 @@ void SmacPlanner::configure(
   }
 
   // convert to grid coordinates
+  const double minimum_turning_radius_global_coords = search_info.minimum_turning_radius;
   search_info.minimum_turning_radius =
     search_info.minimum_turning_radius / (_costmap->getResolution() * _downsampling_factor);
 
@@ -190,6 +190,7 @@ void SmacPlanner::configure(
     _smoother = std::make_unique<Smoother>();
     _optimizer_params.get(_node.get(), name);
     _smoother_params.get(_node.get(), name);
+    _smoother_params.max_curvature = 1.0f / minimum_turning_radius_global_coords;
     _smoother->initialize(_optimizer_params);
   }
 
@@ -330,11 +331,6 @@ nav_msgs::msg::Path SmacPlanner::createPlan(
   plan.poses.reserve(path.size());
 
   for (int i = path.size() - 1; i >= 0; --i) {
-    // TODO(stevemacenski): probably isn't necessary
-    if (_smoother && i % downsample_ratio != 0) {
-      continue;
-    }
-
     path_world.push_back(getWorldCoords(path[i].x, path[i].y, costmap));
     pose.pose.position.x = path_world.back().x();
     pose.pose.position.y = path_world.back().y();
@@ -376,11 +372,11 @@ nav_msgs::msg::Path SmacPlanner::createPlan(
   removeHook(path_world);
 
   // populate final path
+  // TODO(stevemacenski): set orientation to tangent of path
   for (uint i = 0; i != path_world.size(); i++) {
     pose.pose.position.x = path_world[i][0];
     pose.pose.position.y = path_world[i][1];
     plan.poses[i] = pose;
-    // TODO(stevemacenski): Add orientation from tangent of path
   }
 
   return plan;
