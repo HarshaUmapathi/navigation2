@@ -47,7 +47,8 @@ TEST(AStarTest, test_a_star_2d)
   a_star.initialize(false, max_iterations, it_on_approach);
   a_star.setFootprint(nav2_costmap_2d::Footprint(), true);
 
-  nav2_costmap_2d::Costmap2D * costmapA = new nav2_costmap_2d::Costmap2D(100, 100, 0.1, 0.0, 0.0, 0);
+  nav2_costmap_2d::Costmap2D * costmapA =
+    new nav2_costmap_2d::Costmap2D(100, 100, 0.1, 0.0, 0.0, 0);
   // island in the middle of lethal cost to cross
   for (unsigned int i = 40; i <= 60; ++i) {
     for (unsigned int j = 40; j <= 60; ++j) {
@@ -70,13 +71,16 @@ TEST(AStarTest, test_a_star_2d)
   }
 
   // setting non-zero dim 3 for 2D search
-  EXPECT_THROW(a_star.createGraph(costmapA->getSizeInCellsX(), costmapA->getSizeInCellsY(), 10, costmapA), std::runtime_error);
+  EXPECT_THROW(
+    a_star.createGraph(
+      costmapA->getSizeInCellsX(), costmapA->getSizeInCellsY(), 10, costmapA), std::runtime_error);
   EXPECT_THROW(a_star.setGoal(0, 0, 10), std::runtime_error);
   EXPECT_THROW(a_star.setStart(0, 0, 10), std::runtime_error);
 
   path.clear();
   // failure cases with invalid inputs
-  smac_planner::AStarAlgorithm<smac_planner::Node2D> a_star_2(smac_planner::MotionModel::VON_NEUMANN, info);
+  smac_planner::AStarAlgorithm<smac_planner::Node2D> a_star_2(
+    smac_planner::MotionModel::VON_NEUMANN, info);
   a_star_2.initialize(false, max_iterations, it_on_approach);
   a_star_2.setFootprint(nav2_costmap_2d::Footprint(), true);
   num_it = 0;
@@ -113,7 +117,8 @@ TEST(AStarTest, test_a_star_se2)
   info.reverse_penalty = 2.1;
   info.minimum_turning_radius = 2.0;  // in grid coordinates
   unsigned int size_theta = 72;
-  smac_planner::AStarAlgorithm<smac_planner::NodeSE2> a_star(smac_planner::MotionModel::DUBIN, info);
+  smac_planner::AStarAlgorithm<smac_planner::NodeSE2> a_star(
+    smac_planner::MotionModel::DUBIN, info);
   int max_iterations = 10000;
   float tolerance = 10.0;
   int it_on_approach = 10;
@@ -122,7 +127,8 @@ TEST(AStarTest, test_a_star_se2)
   a_star.initialize(false, max_iterations, it_on_approach);
   a_star.setFootprint(nav2_costmap_2d::Footprint(), true);
 
-  nav2_costmap_2d::Costmap2D * costmapA = new nav2_costmap_2d::Costmap2D(100, 100, 0.1, 0.0, 0.0, 0);
+  nav2_costmap_2d::Costmap2D * costmapA =
+    new nav2_costmap_2d::Costmap2D(100, 100, 0.1, 0.0, 0.0, 0);
   // island in the middle of lethal cost to cross
   for (unsigned int i = 40; i <= 60; ++i) {
     for (unsigned int j = 40; j <= 60; ++j) {
@@ -131,7 +137,8 @@ TEST(AStarTest, test_a_star_se2)
   }
 
   // functional case testing
-  a_star.createGraph(costmapA->getSizeInCellsX(), costmapA->getSizeInCellsY(), size_theta, costmapA);
+  a_star.createGraph(
+    costmapA->getSizeInCellsX(), costmapA->getSizeInCellsY(), size_theta, costmapA);
   a_star.setStart(10u, 10u, 0u);
   a_star.setGoal(80u, 80u, 40u);
   smac_planner::NodeSE2::CoordinateVector path;

@@ -50,6 +50,7 @@ TEST(SmacTest, test_smac_se2)
     std::make_shared<nav2_costmap_2d::Costmap2DROS>("global_costmap");
   costmap_ros->on_configure(rclcpp_lifecycle::State());
 
+  nodeSE2->declare_parameter("test.smooth_path", true);
   nodeSE2->set_parameter(rclcpp::Parameter("test.smooth_path", true));
 
   geometry_msgs::msg::PoseStamped start, goal;
