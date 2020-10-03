@@ -97,11 +97,11 @@ TEST(SmootherTest, test_smoother)
     // check no collisions
     unsigned int mx, my;
     costmap->worldToMap(path[i][0], path[i][1], mx, my);
-    EXPECT_TRUE(static_cast<int>(costmap->getCost(mx, my)) < 253);
+    EXPECT_TRUE(static_cast<int>(costmap->getCost(mx, my)) <= 253);
 
     // check distance between points is in a good range
     EXPECT_NEAR(
-      hypot(path[i][0] - path[i+1][0], path[i][1] - path[i+1][1]), sqrt(2), 0.01);
+      hypot(path[i][0] - path[i + 1][0], path[i][1] - path[i + 1][1]), sqrt(2), 0.01);
   }
 
   delete costmap;

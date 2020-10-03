@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. Reserved.
 
-#ifndef SMAC_PLANNER__COST_FUNCTION_HPP_
-#define SMAC_PLANNER__COST_FUNCTION_HPP_
+#ifndef DEPRECATED_UPSAMPLER__UPSAMPLER_COST_FUNCTION_HPP_
+#define DEPRECATED_UPSAMPLER__UPSAMPLER_COST_FUNCTION_HPP_
 
 #include <cmath>
 #include <vector>
@@ -32,16 +32,6 @@
 
 namespace smac_planner
 {
-
-// TODO reduce code duplication. there's very litle change here.
-// https://github.com/OrebroUniversity/navigation_oru-release
-// bspline smoother, mpc, planner
-// upsampler params TODO
-
-// curvature minimization ? TODO
-
-// TODO why so much slower or less functional when fast? tuning?
-
 /**
  * @struct smac_planner::UpsamplerCostFunction
  * @brief Cost function for path upsampling with multiple terms using unconstrained
@@ -58,12 +48,13 @@ public:
     const std::vector<Eigen::Vector2d> & path,
     const SmootherParams & params,
     const int & upsample_ratio)
-  : _num_params(2 * path.size()),  // TODO removed upsample_ratio because temp upsampling on path size
+  : _num_params(2 * path.size()),
     _params(params),
     _upsample_ratio(upsample_ratio),
     _path(path)
   {
   }
+  // TODO(stevemacenski) removed upsample_ratio because temp upsampling on path size
 
   /**
    * @struct CurvatureComputations
@@ -138,18 +129,17 @@ public:
 
       xi = Eigen::Vector2d(parameters[x_index], parameters[y_index]);
 
-      // TODO from deep copy to make sure no feedback _path
+      // TODO(stevemacenski): from deep copy to make sure no feedback _path
       xi_p1 = _path.at(i + 1);
       xi_m1 = _path.at(i - 1);
-      //xi_p1 = Eigen::Vector2d(parameters[x_index + 2], parameters[y_index + 2]);
-      //xi_m1 = Eigen::Vector2d(parameters[x_index - 2], parameters[y_index - 2]);
+      // xi_p1 = Eigen::Vector2d(parameters[x_index + 2], parameters[y_index + 2]);
+      // xi_m1 = Eigen::Vector2d(parameters[x_index - 2], parameters[y_index - 2]);
 
       // compute cost
-      addSmoothingResidual(15000, xi, xi_p1, xi_m1, cost_raw);  // TODO params
+      addSmoothingResidual(15000, xi, xi_p1, xi_m1, cost_raw);
       addCurvatureResidual(60.0, xi, xi_p1, xi_m1, curvature_params, cost_raw);
 
       if (gradient != NULL) {
-
         // compute gradient
         addSmoothingJacobian(15000, xi, xi_p1, xi_m1, grad_x_raw, grad_y_raw);
         addCurvatureJacobian(60.0, xi, xi_p1, xi_m1, curvature_params, grad_x_raw, grad_y_raw);
@@ -258,8 +248,9 @@ protected:
 
     curvature_params.ki_minus_kmax = curvature_params.turning_rad - _upsample_ratio *
       _params.max_curvature;
-    // TODO is use of upsample_ratio correct here? small number?
-    // TODO can remove the subtraction with a lower weight value, does have direction issue, maybe just tuning?
+    // TODO(stevemacenski) is use of upsample_ratio correct here? small number?
+    // TODO(stevemacenski) can remove the subtraction with a
+    // lower weight value, does have direction issue, maybe just tuning?
 
     if (curvature_params.ki_minus_kmax <= EPSILON) {
       // Quadratic penalty need not apply
@@ -339,12 +330,12 @@ protected:
     const Eigen::Vector2d jacobian_im1 = u *
       (common_prefix * p2 + (common_suffix * d_delta_xi_d_xi));
     const Eigen::Vector2d jacobian_ip1 = u * (common_prefix * p1);
-    // j0 += weight * jacobian[0]; // TODO try with the prior xi-1 and xi+1s
-    // j1 += weight * jacobian[1];
-    j0 += weight *
-      (jacobian_im1[0] + 2 * jacobian[0] + jacobian_ip1[0]);  // xi x component of partial-derivative  // TODO I think better without this?
-    j1 += weight *
-      (jacobian_im1[1] + 2 * jacobian[1] + jacobian_ip1[1]);  // xi y component of partial-derivative  // Maybe reflects issue in not using xi-1/+1's
+    j0 += weight * jacobian[0];  // xi y component of partial-derivative
+    j1 += weight * jacobian[1];  // xi x component of partial-derivative
+    // j0 += weight *
+    //   (jacobian_im1[0] + 2 * jacobian[0] + jacobian_ip1[0]);
+    // j1 += weight *
+    //   (jacobian_im1[1] + 2 * jacobian[1] + jacobian_ip1[1]);
   }
 
   /**
@@ -372,4 +363,4 @@ protected:
 
 }  // namespace smac_planner
 
-#endif  // SMAC_PLANNER__COST_FUNCTION_HPP_
+#endif  // DEPRECATED_UPSAMPLER__UPSAMPLER_COST_FUNCTION_HPP_

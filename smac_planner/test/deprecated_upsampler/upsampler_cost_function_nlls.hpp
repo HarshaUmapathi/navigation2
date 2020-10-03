@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. Reserved.
 
-#ifndef SMAC_PLANNER__COST_FUNCTION_NLLS_HPP_
-#define SMAC_PLANNER__COST_FUNCTION_NLLS_HPP_
+#ifndef DEPRECATED_UPSAMPLER__UPSAMPLER_COST_FUNCTION_NLLS_HPP_
+#define DEPRECATED_UPSAMPLER__UPSAMPLER_COST_FUNCTION_NLLS_HPP_
 
 #include <cmath>
 #include <vector>
@@ -32,13 +32,6 @@
 
 namespace smac_planner
 {
-
-// TODO reduce code duplication. there's very litle change here.
-
-// upsampler params TODO
-
-// curvature minimization ? TODO
-
 /**
  * @struct smac_planner::UpsamplerConstrainedCostFunction
  * @brief Cost function for path upsampling with multiple terms using NLLS
@@ -116,7 +109,7 @@ public:
     double grad_x_raw = 0, grad_y_raw = 0, cost_raw = 0;
 
     // compute cost
-    addSmoothingResidual(15000, xi, xi_p1, xi_m1, cost_raw);  // TODO params
+    addSmoothingResidual(15000, xi, xi_p1, xi_m1, cost_raw);
     addCurvatureResidual(60.0, xi, xi_p1, xi_m1, curvature_params, cost_raw);
 
     residuals[0] = 0;
@@ -226,8 +219,6 @@ protected:
 
     curvature_params.ki_minus_kmax = curvature_params.turning_rad - _upsample_ratio *
       _params.max_curvature;
-    // TODO is use of upsample_ratio correct here? small number?
-    // TODO can remove the subtraction with a lower weight value, does have direction issue, maybe just tuning?
 
     if (curvature_params.ki_minus_kmax <= EPSILON) {
       // Quadratic penalty need not apply
@@ -258,8 +249,9 @@ protected:
       return;
     }
 
+    // objective function value
     r += weight *
-      curvature_params.ki_minus_kmax * curvature_params.ki_minus_kmax;  // objective function value
+      curvature_params.ki_minus_kmax * curvature_params.ki_minus_kmax;
   }
 
   /**
@@ -307,12 +299,12 @@ protected:
     const Eigen::Vector2d jacobian_im1 = u *
       (common_prefix * p2 + (common_suffix * d_delta_xi_d_xi));
     const Eigen::Vector2d jacobian_ip1 = u * (common_prefix * p1);
-    // j0 += weight * jacobian[0]; // TODO try with the prior xi-1 and xi+1s
-    // j1 += weight * jacobian[1];
-    j0 += weight *
-      (jacobian_im1[0] + 2 * jacobian[0] + jacobian_ip1[0]);  // xi x component of partial-derivative  // TODO I think better without this?
-    j1 += weight *
-      (jacobian_im1[1] + 2 * jacobian[1] + jacobian_ip1[1]);  // xi y component of partial-derivative  // Maybe reflects issue in not using xi-1/+1's
+    j0 += weight * jacobian[0];  // xi x component of partial-derivative
+    j1 += weight * jacobian[1];  // xi y component of partial-derivative
+    // j0 += weight *
+    //   (jacobian_im1[0] + 2 * jacobian[0] + jacobian_ip1[0]);
+    // j1 += weight *
+    //   (jacobian_im1[1] + 2 * jacobian[1] + jacobian_ip1[1]);
   }
   /**
    * @brief Computing the normalized orthogonal component of 2 vectors
@@ -339,4 +331,4 @@ protected:
 
 }  // namespace smac_planner
 
-#endif  // SMAC_PLANNER__COST_FUNCTION_NLLS_HPP_
+#endif  // DEPRECATED_UPSAMPLER__UPSAMPLER_COST_FUNCTION_NLLS_HPP_

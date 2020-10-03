@@ -104,7 +104,7 @@ public:
   {
     _options.max_solver_time_in_seconds = params.max_time;
 
-    double parameters[path.size() * 2];
+    double parameters[path.size() * 2];  // NOLINT
     for (uint i = 0; i != path.size(); i++) {
       parameters[2 * i] = path[i][0];
       parameters[2 * i + 1] = path[i][1];

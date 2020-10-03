@@ -88,18 +88,18 @@ TEST(AStarTest, test_a_star_2d)
   a_star_2.createGraph(costmapA->getSizeInCellsX(), costmapA->getSizeInCellsY(), 1, costmapA);
   num_it = 0;
   EXPECT_THROW(a_star_2.createPath(path, num_it, tolerance), std::runtime_error);
-  a_star_2.setStart(50, 50, 0); // invalid
-  a_star_2.setGoal(0, 0, 0); // valid
+  a_star_2.setStart(50, 50, 0);  // invalid
+  a_star_2.setGoal(0, 0, 0);  // valid
   num_it = 0;
   EXPECT_THROW(a_star_2.createPath(path, num_it, tolerance), std::runtime_error);
-  a_star_2.setStart(0, 0, 0); // valid
-  a_star_2.setGoal(50, 50, 0); // invalid
+  a_star_2.setStart(0, 0, 0);  // valid
+  a_star_2.setGoal(50, 50, 0);  // invalid
   num_it = 0;
   EXPECT_THROW(a_star_2.createPath(path, num_it, tolerance), std::runtime_error);
   num_it = 0;
   // invalid goal but liberal tolerance
-  a_star_2.setStart(20, 20, 0); // valid
-  a_star_2.setGoal(50, 50, 0); // invalid
+  a_star_2.setStart(20, 20, 0);  // valid
+  a_star_2.setGoal(50, 50, 0);  // invalid
   EXPECT_TRUE(a_star_2.createPath(path, num_it, some_tolerance));
   EXPECT_EQ(path.size(), 32u);
   for (unsigned int i = 0; i != path.size(); i++) {

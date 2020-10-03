@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. Reserved.
 
-#ifndef SMAC_PLANNER__UPSAMPLER_HPP_
-#define SMAC_PLANNER__UPSAMPLER_HPP_
+#ifndef DEPRECATED_UPSAMPLER__UPSAMPLER_HPP_
+#define DEPRECATED_UPSAMPLER__UPSAMPLER_HPP_
 
 #include <cmath>
 #include <vector>
@@ -65,18 +65,18 @@ public:
     _options.nonlinear_conjugate_gradient_type = ceres::POLAK_RIBIERE;
     _options.line_search_interpolation_type = ceres::CUBIC;
 
-    _options.max_num_iterations = params.max_iterations; //5000
-    _options.max_solver_time_in_seconds = params.max_time; //5.0; // TODO
+    _options.max_num_iterations = params.max_iterations;  // 5000
+    _options.max_solver_time_in_seconds = params.max_time;  // 5.0; // TODO
 
     _options.function_tolerance = params.fn_tol;
     _options.gradient_tolerance = params.gradient_tol;
-    _options.parameter_tolerance = params.param_tol;//1e-20;
+    _options.parameter_tolerance = params.param_tol;  // 1e-20;
 
-    _options.min_line_search_step_size = params.advanced.min_line_search_step_size;//1e-30;
+    _options.min_line_search_step_size = params.advanced.min_line_search_step_size;  // 1e-30;
     _options.max_num_line_search_step_size_iterations =
       params.advanced.max_num_line_search_step_size_iterations;
     _options.line_search_sufficient_function_decrease =
-      params.advanced.line_search_sufficient_function_decrease;                                                  //1e-30;
+      params.advanced.line_search_sufficient_function_decrease;  // 1e-30;
     _options.max_line_search_step_contraction = params.advanced.max_line_search_step_contraction;
     _options.min_line_search_step_contraction = params.advanced.min_line_search_step_contraction;
     _options.max_num_line_search_direction_restarts =
@@ -113,14 +113,14 @@ public:
 
     const int param_ratio = upsample_ratio * 2.0;
     const int total_size = 2 * (path.size() * upsample_ratio - upsample_ratio + 1);
-    double parameters[total_size];
+    double parameters[total_size];  // NOLINT
 
     // 20-4hz regularly, but dosnt work in faster cases
     // Linearly distribute initial poses for optimization
-    // TODO generalize for 2x and 4x
+    // TODO(stevemacenski) generalize for 2x and 4x
     unsigned int next_pt;
     Eigen::Vector2d interpolated;
-    std::vector<Eigen::Vector2d> temp_path;  // TODO
+    std::vector<Eigen::Vector2d> temp_path;
     for (unsigned int pt = 0; pt != path.size() - 1; pt++) {
       next_pt = pt + 1;
       interpolated = (path[next_pt] + path[pt]) / 2.0;
@@ -210,4 +210,4 @@ private:
 
 }  // namespace smac_planner
 
-#endif  // SMAC_PLANNER__UPSAMPLER_HPP_
+#endif  // DEPRECATED_UPSAMPLER__UPSAMPLER_HPP_

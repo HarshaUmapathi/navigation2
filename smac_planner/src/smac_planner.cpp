@@ -38,8 +38,8 @@
 //   We have A* path smoothed to kinematic paramrters. Even without explicit modelling of ackermann or limited curvature kinematics, you can get it here. In fact, while a little hand wavey, if you plan in a full potential field with default settings, it steers intentionally in the center of spaces. If that space is built for a robot or vehicle (eg road, or aisle, or open space, or office) then you’re pseduo-promised that the curvature can be valid for your vehicle. Now the then the boundry conditions (initial and final state) are not. For alot of cases thats sufficient bc of an intelligent local planner based on dubin curves or something, but if not, we have a full hybrid A* as well.  // NOLINT
 //   Ex of robot to limit curvature: industrial for max speed without dumping load, ackermann, legged to prop forward to minimize slow down for off acis motion, diff to not whip around  // NOLINT
 //  Show path, no map -- Show term smoothing, lovely, no map -- Then map, welp, thats useless
-// - we very carefully tuned and designed the penalties to be cost aware so smoothing isn't strictly necessary
-    // PUBLISH??!?!?! this means no smoothing required instead in optimization
+// - we very carefully tuned and designed the penalties to be cost aware so smoothing isn't strictly necessary  // NOLINT
+// PUBLISH??!?!?! this means no smoothing required instead in optimization
 // astar timeout, max duration, optimizer gets rest or until its set maximum. Test time before/after A* but not in it, that would slow down. if over, send log warning like DWB  // NOLINT
 
 // if collision in smoothed path, anchor that point and then re-run until successful (helpful in narrow spaces).  // NOLINT
