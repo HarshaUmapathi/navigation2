@@ -21,22 +21,43 @@
 namespace smac_planner
 {
 
+/**
+ * @class smac_planner::GridCollisionChecker
+ * @brief A costmap grid collision checker
+ */
 class GridCollisionChecker
   : public nav2_costmap_2d::FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>
 {
 public:
+  /**
+   * @brief A constructor for smac_planner::GridCollisionChecker
+   * @param costmap The costmap to collision check against
+   */
   GridCollisionChecker(
     nav2_costmap_2d::Costmap2D * costmap)
   : FootprintCollisionChecker(costmap)
   {
   }
 
+  /**
+   * @brief Set the footprint to use with collision checker
+   * @param footprint The footprint to collision check against
+   * @param radius Whether or not the footprint is a circle and use radius collision checking
+   */
   void setFootprint(const nav2_costmap_2d::Footprint & footprint, const bool & radius)
   {
     unoriented_footprint_ = footprint;
     footprint_is_radius_ = radius;
   }
 
+  /**
+   * @brief Check if in collision with costmap and footprint at pose
+   * @param x X coordinate of pose to check against
+   * @param y Y coordinate of pose to check against
+   * @param theta Angle of pose to check against
+   * @param traverse_unknown Whether or not to traverse in unknown space
+   * @return boolean if in collision or not.
+   */
   bool inCollision(
     const float & x,
     const float & y,
@@ -71,6 +92,10 @@ public:
     }
   }
 
+  /**
+   * @brief Get cost at footprint pose in costmap
+   * @return the cost at the pose in costmap
+   */
   float getCost()
   {
     // Assumes inCollision called prior

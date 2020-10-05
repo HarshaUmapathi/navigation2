@@ -34,7 +34,7 @@ We further improve on the Hybrid-A\* work in the following ways:
 - Closest path on approach within tolerance if exact path cannot be found or in invalid space.
 - Multi-model hybrid searching including Dubin and Reeds-Shepp models. More models may be trivially added.
 - Time monitoring of planning to dynamically scale the maximum CG smoothing time based on remaining planning duration requested. 
-- High unit and integration test coverage.
+- High unit and integration test coverage, doxygen documentation.
 - Uses modern C++14 language features and individual components are easily reusable.
 
 All of these features (multi-resolution, models, smoother, etc) are also available in the 2D `SmacPlanner2D` plugin.
