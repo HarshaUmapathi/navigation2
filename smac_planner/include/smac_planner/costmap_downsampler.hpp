@@ -81,11 +81,11 @@ public:
 
 private:
   /**
-   * Update the sizes X-Y of the costmap and its downsampled version
+   * @brief Update the sizes X-Y of the costmap and its downsampled version
    */
   void updateCostmapSize();
   /**
-   * Resize the downsampled costmap. Used in case the costmap changes and we need to update the downsampled version
+   * @brief Resize the downsampled costmap. Used in case the costmap changes and we need to update the downsampled version
    */
   void resizeCostmap();
   /**

@@ -23,6 +23,10 @@ namespace smac_planner
 
 typedef std::pair<float, unsigned int> NodeHeuristicPair;
 
+/**
+ * @struct smac_planner::SearchInfo
+ * @brief Search properties and penalties
+ */
 struct SearchInfo
 {
   float minimum_turning_radius;

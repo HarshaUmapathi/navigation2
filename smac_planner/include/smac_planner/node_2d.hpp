@@ -162,14 +162,33 @@ public:
    */
   bool isNodeValid(const bool & traverse_unknown, GridCollisionChecker collision_checker);
 
+  /**
+   * @brief get traversal cost from this node to child node
+   * @param child Node pointer to this node's child
+   * @return traversal cost
+   */
   float getTraversalCost(const NodePtr & child);
 
+  /**
+   * @brief Get index
+   * @param x x coordinate of point to get index of
+   * @param y y coordinate of point to get index of
+   * @param width width of costmap
+   * @return index
+   */
   static inline unsigned int getIndex(
     const unsigned int & x, const unsigned int & y, const unsigned int & width)
   {
     return x + y * width;
   }
 
+  /**
+   * @brief Get index
+   * @param Index Index of point
+   * @param width width of costmap
+   * @param angles angle bins to use (must be 1 or throws exception)
+   * @return coordinates of point
+   */
   static inline Coordinates getCoords(
     const unsigned int & index, const unsigned int & width, const unsigned int & angles)
   {

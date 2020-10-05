@@ -26,7 +26,6 @@ enum class MotionModel
   MOORE = 2,
   DUBIN = 3,
   REEDS_SHEPP = 4,
-  // BALKCOM_MASON = 5,
 };
 
 inline std::string toString(const MotionModel & n)
@@ -40,8 +39,6 @@ inline std::string toString(const MotionModel & n)
       return "Dubin";
     case MotionModel::REEDS_SHEPP:
       return "Reeds-Shepp";
-    // case MotionModel::BALKCOM_MASON:
-    //   return "Balkcom-Mason";
     default:
       return "Unknown";
   }
@@ -57,8 +54,6 @@ inline MotionModel fromString(const std::string & n)
     return MotionModel::DUBIN;
   } else if (n == "REEDS_SHEPP") {
     return MotionModel::REEDS_SHEPP;
-    // } else if (n == "BALKCOM_MASON") {
-    //   return MotionModel::BALKCOM_MASON;
   } else {
     return MotionModel::UNKNOWN;
   }

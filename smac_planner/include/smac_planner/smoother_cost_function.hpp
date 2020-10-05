@@ -44,8 +44,8 @@ class UnconstrainedSmootherCostFunction : public ceres::FirstOrderFunction
 public:
   /**
    * @brief A constructor for smac_planner::UnconstrainedSmootherCostFunction
-   * @param num_points Number of path points to consider
-   * @param costmap A minimal costmap wrapper to get values for collision and obstacle avoidance
+   * @param original_path Original unsmoothed path to smooth
+   * @param costmap A costmap to get values for collision and obstacle avoidance
    */
   UnconstrainedSmootherCostFunction(
     std::vector<Eigen::Vector2d> * original_path,

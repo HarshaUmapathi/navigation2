@@ -59,6 +59,10 @@ public:
   typedef typename NodeT::CoordinateVector CoordinateVector;
   typedef typename NodeVector::iterator NeighborIterator;
 
+  /**
+   * @struct smac_planner::NodeComparator
+   * @brief Node comparison for priority queue sorting
+   */
   struct NodeComparator
   {
     bool operator()(const NodeElement & a, const NodeElement & b) const
@@ -107,6 +111,7 @@ public:
    *   For 3D nodes, a SE2 grid without cost info as needs collision detector for footprint.
    * @param x The total number of nodes in the X direction
    * @param y The total number of nodes in the X direction
+   * @param dim_3 The total number of nodes in the theta or Z direction
    * @param costmap Costmap to convert into the graph
    */
   void createGraph(
@@ -117,7 +122,9 @@ public:
 
   /**
    * @brief Set the goal for planning, as a node index
-   * @param value The node index of the goal
+   * @param mx The node X index of the goal
+   * @param my The node Y index of the goal
+   * @param dim_3 The node dim_3 index of the goal
    */
   void setGoal(
     const unsigned int & mx,
@@ -126,13 +133,20 @@ public:
 
   /**
    * @brief Set the starting pose for planning, as a node index
-   * @param value The node index of the start
+   * @param mx The node X index of the goal
+   * @param my The node Y index of the goal
+   * @param dim_3 The node dim_3 index of the goal
    */
   void setStart(
     const unsigned int & mx,
     const unsigned int & my,
     const unsigned int & dim_3);
 
+  /**
+   * @brief Set the footprint
+   * @param footprint footprint of robot
+   * @param use_radius Whether this footprint is a circle with radius
+   */
   void setFootprint(nav2_costmap_2d::Footprint footprint, bool use_radius);
 
   /**

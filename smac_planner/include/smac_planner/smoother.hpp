@@ -50,6 +50,7 @@ public:
 
   /**
    * @brief Initialization of the smoother
+   * @param params OptimizerParam struct
    */
   void initialize(const OptimizerParams params)
   {
