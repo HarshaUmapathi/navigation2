@@ -121,12 +121,28 @@ sudo apt-get install ros-<ros2-distro>-smac-planner
 
 ### Potential Fields
 
-//  - Do low potential field in all areas -- this should be the new defacto-default (really should have been already but ppl ignore it). Footprint + inflation important  // NOLINT
+Many users and default navigation configuration files I find are really missing the point of the inflation layer. While it's true that you can simply inflate a small radius around the walls, the _true_ value of the inflation layer is creating a consistent potential field around the entire map. 
+
+Some of the most popular tuning guides for Navigation / Navigation2 even [call this out specifically](https://arxiv.org/pdf/1706.09068.pdf) that there's substantial benefit to creating a gentle potential field across the width of the map - after inscribed costs are applied - yet very few users do this. 
+
+This habit actually results in paths produced by NavFn, Global Planner, and now SmacPlanner to be very suboptimal. They really want to look for a smooth potential field rather than wide open 0-cost spaces in order to stay in the middle of spaces and deal with close-by moving obstacles better.
+
+So it is my recommendation in using this package, as well as all other cost-aware search planners available in ROS, to increase your inflation layer cost scale in order to adequately produce a smooth potential across the entire map. For very large open spaces, its fine to have 0-cost areas in the middle, but for halls, aisles, and similar; **please create a smooth potential to provide the best performance**. 
 
 ### 2D Search and Smoothing
 
-- recommend A* 2D no smooth, any controller handles the blockiness fine and then faster. Its nice for humans but robot doesnt need it because its still cost aware.
+While the 2D planner has the smoother available (albeit, default parameters are tuned for the Hybrid-A\* planner, so you may need to play with that), my recommendation is not to use it.
+
+The 2D planner provides a 4-connected or 8-connected neighborhood path. This path may have little zig-zags in order to get at another non-90 or non-45 degree heading. That is totally fine. Your local trajectory planner such as DWB and TEB take these points into account to follow, but you won't see any zig-zag behaviors of your final robot motion after given to a trajectory planner.
+
+The smoothing is more "pleasing" to human eyes, but you don't want to be owning additional compute when it doesn't largely impact the output. However, if you have a more sensitive local trajectory planner like a carrot follower (e.g. pure pursuit), then you will want to smooth out the paths in order to have something more easily followable.
+
+Take this advise into account.
 
 ### Costmap Resolutions
 
-- recommend users set costmap resolution for global at the hybrid-A* rate with 0 costmap downsampling For the case that hybrid-A* is the only planner algorithm in use, that way there's no downsampling CPU use and overall alot lower CPU / memory usage at lower rates. But use if you have other planners that want a higher ersolution or in testing. Lowering th eresulution will make the planner very much faster. 
+We provide for both the Hybrid-A\* and 2D A\* implementations a costmap downsampler option. This can be **incredible** beneficial when planning very long paths in larger spaces. The motion models for SE2 planning and neighborhood search in 2D planning is proportional to the costmap resolution. By downsampling it, you can N^2 reduce the number of expansions required to achieve a particular goal. However, the lower the resolution, the larger small obstacles appear and you won't be able to get super close to obstacles. This is a trade-off to make and test. Some numbers I've seen are 2-4x drops in planning CPU time for a 2-3x downsample rate. For 60m paths in an office space, I was able to get it << 100ms at a 2-3x downsample rate.
+
+I recommend users using a 5cm resolution costmap and playing with the different values of downsampling rate until they achieve what they think is optimal performance (lowest number of expansions vs. necessity to achieve fine goal poses). Then, I would recommend to change the global costmap resolution to this new value. That way you don't own the compute of downsampling and maintaining a higher-resolution costmap that isn't used.
+
+Remember, the global costmap is **only** there to provide an environment for the planner to work in. It is not there for human-viewing even if a more fine resolution costmap is more human "pleasing". If you use multiple planners in the planner server, then you will want to use the highest resolution for the most needed planner and then use the downsampler to downsample to the Hybrid-A* resolution. 
