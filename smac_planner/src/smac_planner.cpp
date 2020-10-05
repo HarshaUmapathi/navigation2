@@ -12,44 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License. Reserved.
 
-// benefits list:
-//  - for tolerance, only search once (max iterations on appraoch meeting tolerance), if set tol low and iterations low then can use to actually compute to a scale before target  // NOLINT
-//      e.g. compute for the next ~N meters only on way towards something
-//  - Against NavFns: we have inflation + dynamic processing: cached gradiant map not used. reusibility, cannot be built on for nonholonomic, no looping or weird artifacts  // NOLINT
-//  - common building blocks for use in all planners to maximize reliability, stress test, and reduce likelihood of bugs  // NOLINT
-//  - not searching then backtracing with grad descent for 2x go through
-//  - lower memory (?) and faster (?)
-//  - modern data structures & carefully optimized & generic for use in other planning problems
-//  - generic smoother that has applications to anything
-//  - smoother costmap aware (vs bezier, splines, b-splines, etc)
-//  - caching paths rather than recomputing needlessly if they're still good
-//  - network planner & arbitrary nonholonomic including ackermann
-//  - non-circular footprints, diff/omni/ackermann, covering all classes of ground robots. circl diff/omni A*, ackerman hybrid, arbitrary diff/omni A* if relatively small, hybrid is large  // NOLINT
-//  - dials for Astar quality (can be quick and dirty or slow and smooth) then dials for the optimizer to suit (quick once over, or really smooth out a jazzed path)  // NOLINT
-//  - disable max iterations / tolerance with 0 / -1
-//  - max time for soft gaurentees on planning and smoothing times, time tracking
-//  - Do low potential field in all areas -- this should be the new defacto-default (really should have been already but ppl ignore it). Footprint + inflation important  // NOLINT
-//  - describe why and when on the 4 vs 8 connected
-//  - plots of pts that violate over iterations (curve, dist > thresh, smooth > dist, cost > thresh)
-// - Need to boil down statements about why I did this, clear benefits, and drawbacks of current approaches / solutions  // NOLINT
-//  - Identified 3 math errors of Thrun
-//  - show and explain derivations on smoother. Show and explain hybrid stuff
-// Lets look at what we ahve here:
-//   We have A* path smoothed to kinematic paramrters. Even without explicit modelling of ackermann or limited curvature kinematics, you can get it here. In fact, while a little hand wavey, if you plan in a full potential field with default settings, it steers intentionally in the center of spaces. If that space is built for a robot or vehicle (eg road, or aisle, or open space, or office) then you’re pseduo-promised that the curvature can be valid for your vehicle. Now the then the boundry conditions (initial and final state) are not. For alot of cases thats sufficient bc of an intelligent local planner based on dubin curves or something, but if not, we have a full hybrid A* as well.  // NOLINT
-//   Ex of robot to limit curvature: industrial for max speed without dumping load, ackermann, legged to prop forward to minimize slow down for off acis motion, diff to not whip around  // NOLINT
-//  Show path, no map -- Show term smoothing, lovely, no map -- Then map, welp, thats useless
-// - we very carefully tuned and designed the penalties to be cost aware so smoothing isn't strictly necessary  // NOLINT
-// PUBLISH??!?!?! this means no smoothing required instead in optimization
-// astar timeout, max duration, optimizer gets rest or until its set maximum. Test time before/after A* but not in it, that would slow down. if over, send log warning like DWB  // NOLINT
-
-// if collision in smoothed path, anchor that point and then re-run until successful (helpful in narrow spaces).  // NOLINT
-
-// In fact, I use that smoother in the A* implementation to make it "smooth" so its not grid-blocky.  // NOLINT
-// Its actually how I tested the smoother since that's the nuclear case with tons of sharp random angles.  // NOLINT
-// People are used to these smooth paths from Navigation Function approaches and I'm not sure anyone would be  // NOLINT
-// happy if I just gave them a A* without it. Its stil quite fast but its much faster than NavFn without the smoother.  // NOLINT
-// If you have a half decent controller though, its largely unneeded (I tested, its fine, its just not visually appealing).  // NOLINT
-
 #include <string>
 #include <memory>
 #include <vector>
